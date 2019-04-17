@@ -1,0 +1,64 @@
+#!/bin/bash
+
+. ./clash
+
+# method example
+_find_value() {
+  printf 'Visiting node with value: %s\n' "$value"
+  if [ "$1" -eq "$value" ]; then
+    echo 'Found value'
+  elif [ -n "$left" ] &&
+       [ "$1" -lt "$value" ]; then
+    "$left"_find_value "$1"
+  elif [ -n "$right" ] &&
+       [ "$1" -gt "$value" ]; then
+    "$right"_find_value "$1"
+  else
+    echo 'Value not found'
+  fi
+}
+
+# external function example, using generated getters
+find_value() {
+  local value="$("$1"_value)"
+  local left="$("$1"_left)"
+  local right="$("$1"_right)"
+  shift
+  printf 'Visiting node with value: %s\n' "$value"
+  if [ "$1" -eq "$value" ]; then
+    echo 'Found value'
+  elif [ -n "$left" ] &&
+       [ "$1" -lt "$value" ]; then
+    find_value "$left" "$1"
+  elif [ -n "$right" ] &&
+       [ "$1" -gt "$value" ]; then
+    find_value "$right" "$1"
+  else
+    echo 'Value not found'
+  fi
+}
+
+#       20
+#      /  \
+#     8    40
+#    / \     \
+#   5   14    60
+
+class btree   \
+  value       \
+  left        \
+  right       \
+  _find_value
+
+btree b1 20 b2 b3
+btree b2 8  b4 b5
+btree b3 40 '' b6
+btree b4 5  '' ''
+btree b5 14 '' ''
+btree b6 60 '' ''
+
+# method style
+b1_find_value "$1"
+
+# classic function style
+find_value b1 "$1"

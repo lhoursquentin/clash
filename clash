@@ -1,0 +1,40 @@
+#!/bin/bash
+
+class(){
+  name="$1"
+  shift
+  attr_defs=
+  getter_defs=
+  class_body='
+    '"$name"'() {
+      local '"$name"'_obj_name="$1"
+      shift'
+  local attr_index=1
+  for attr do
+    case "$attr" in
+      _*)
+        method_defs="$method_defs"'
+      eval "$'"$name"'_obj_name"'"'"'_'"${attr#_}"'() {'"$attr_defs"'
+        '"$attr"' "$@"
+      }'"'"
+        ;;
+      *)
+      attr_defs="$attr_defs"'
+        local '"$attr"'='"'"'"'"'"'"''"$'$attr_index'"''"'"'"'"'"'"
+        getter_defs="$getter_defs"'
+      eval "$'"$name"'_obj_name"'"'_$attr"'() {
+          printf '"'"'"'"'"'%s\n'"'"'"'"'"' '"'"'"'"'"'"''"$'"$attr_index"'"''"'"'"'"'"'"'
+      }'"'"
+        ;;
+    esac
+    attr_index="$((attr_index + 1))"
+  done
+  class_body="$class_body"'
+      eval '"'"''"$attr_defs"''"'"'
+      '"$method_defs"'
+      '"$getter_defs"'
+      _'"$name"' "$@" 2> /dev/null || :
+    }
+  '
+  eval "$class_body"
+}
