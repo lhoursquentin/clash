@@ -39,6 +39,11 @@ find_value() {
   fi
 }
 
+# constructor
+_btree() {
+  printf 'Created %s with value %s\n' "$name" "$value"
+}
+
 #       20
 #      /  \
 #     8    40
