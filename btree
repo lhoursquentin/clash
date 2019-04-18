@@ -4,7 +4,7 @@
 
 # method example
 _find_value() {
-  printf 'Visiting node with value: %s\n' "$value"
+  printf 'Visiting node %s (%s)\n' "$name" "$value"
   if [ "$1" -eq "$value" ]; then
     echo 'Found value'
   elif [ -n "$left" ] &&
@@ -20,11 +20,12 @@ _find_value() {
 
 # external function example, using generated getters
 find_value() {
+  local name="$("$1"_name)"
   local value="$("$1"_value)"
   local left="$("$1"_left)"
   local right="$("$1"_right)"
   shift
-  printf 'Visiting node with value: %s\n' "$value"
+  printf 'Visiting node %s (%s)\n' "$name" "$value"
   if [ "$1" -eq "$value" ]; then
     echo 'Found value'
   elif [ -n "$left" ] &&

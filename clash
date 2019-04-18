@@ -7,9 +7,9 @@ class(){
   getter_defs=
   class_body='
     '"$name"'() {
-      local '"$name"'_obj_name="$1"
-      shift'
+      local '"$name"'_obj_name="$1"'
   local attr_index=1
+  set -- 'name' "$@"
   for attr do
     case "$attr" in
       _*)
