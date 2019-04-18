@@ -63,8 +63,22 @@ btree b4 5  '' ''
 btree b5 14 '' ''
 btree b6 60 '' ''
 
-# method style
-b1_find_value "$1"
+echo
 
-# classic function style
-find_value b1 "$1"
+if [ "$#" -gt 0 ]; then
+  value_searched="$1"
+else
+  value_searched=15
+fi
+
+printf 'Searching for value: %s\n' "$value_searched"
+
+echo
+
+echo 'Method style:'
+b1_find_value "$value_searched"
+
+echo
+
+echo 'Classic function style:'
+find_value b1 "$value_searched"
