@@ -1,6 +1,9 @@
 #!/bin/bash
 
-. ./clash
+if ! . ./clash 2> /dev/null; then
+  echo 'Could not locate clash, please run the example from the clash directory'
+  exit 1
+fi >&2
 
 # method example
 _find_value() {
