@@ -9,24 +9,30 @@ class(){
     '"$name"'() {'
   local attr_index=1
   set -- 'name' "$@"
-  for attr do
-    case "$attr" in
+  nb_args="$#"
+  while [ "$nb_args" -gt 0 ]; do
+    case "$1" in
       _*)
-        method_defs="$method_defs"'
-      eval "$1"'"'"'_'"${attr#_}"'() {'"$attr_defs"'
-        '"$attr"' "$@"
-      }'"'"
+        set -- "$@" "$1"
         ;;
       *)
         attr_defs="$attr_defs"'
-        local '"$attr"'='"'"'"'"'"'"''"$'$attr_index'"''"'"'"'"'"'"
+        local '"$1"'='"'"'"'"'"'"''"$'"$attr_index"'"''"'"'"'"'"'"
         getter_defs="$getter_defs"'
-      eval "$1"'"'_$attr"'() {
+      eval "$1"'"'_$1"'() {
         printf '"'"'"'"'"'%s\n'"'"'"'"'"' '"'"'"'"'"'"''"$'"$attr_index"'"''"'"'"'"'"'"'
       }'"'"
+        attr_index="$((attr_index + 1))"
         ;;
     esac
-    attr_index="$((attr_index + 1))"
+    nb_args="$((nb_args - 1))"
+    shift
+  done
+  for method do
+    method_defs="$method_defs"'
+      eval "$1"'"'"'_'"${method#_}"'() {'"$attr_defs"'
+        '"$method"' "$@"
+      }'"'"
   done
   class_body="$class_body"'
       eval '"'"''"$attr_defs"''"'"'
