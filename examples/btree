@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if ! . ./clash 2> /dev/null; then
   echo 'Could not locate clash, please run the example from the clash directory'
@@ -57,7 +57,7 @@ class btree   \
   value       \
   left        \
   right       \
-  _find_value
+  _find_value \
 
 btree b1 20 b2 b3
 btree b2 8  b4 b5
@@ -68,11 +68,7 @@ btree b6 60 '' ''
 
 echo
 
-if [ "$#" -gt 0 ]; then
-  value_searched="$1"
-else
-  value_searched=15
-fi
+value_searched="${1-15}"
 
 printf 'Searching for value: %s\n' "$value_searched"
 
