@@ -2,7 +2,10 @@
 
 if [ -z "$KSH_VERSION" ]; then
   local=local
+  func_suffix='()'
 else
+  # ksh93 needs the `function x {` syntax for typeset to act as local
+  func_prefix='function '
   local=typeset
 fi
 
@@ -31,7 +34,7 @@ class(){
   shift
   attr_defs=
   class_body='
-    '"$name"'() {'
+    '"$func_prefix$name$func_suffix"' {'
   "$local" attr_index=1
   set -- 'name' "$@"
   nb_args="$#"
@@ -42,14 +45,14 @@ class(){
         ;;
       *)
         attr_methods_defs="$attr_methods_defs"'
-      eval "$1"'"'_$1"'() {
+      eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {
         '"$local"' _tmp_getter='"'"'"'"'"'"''"$(quote "$'"$attr_index"'"; printf x)"''"'"'"'"'"'"'
         printf '"'"'"'"'"'%s\n'"'"'"'"'"' "${_tmp_getter%x}"
       }'"'"
         if [ "$1" != 'name' ]; then
           attr_methods_defs="$attr_methods_defs"'
-      eval "$1"'"'_$1"'_is() {
-        eval '"'"'"$1"'"'_$1'"'"'"'"'"'"'"'() {
+      eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {
+        eval '"$func_prefix"''"'"'"$1"'"'_$1'"'"'"'"'"'"'"''"$func_suffix"' {
           '"$local"' _tmp_getter='"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''"; printf x)"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
           printf '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'%s\n'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"' "${_tmp_getter%x}"
         }'"'"'"'"'"'"'"'"'
@@ -67,7 +70,7 @@ x}"'
   done
   for method do
     method_defs="$method_defs"'
-      eval "$1"'"'"'_'"${method#_}"'() {'"$attr_defs"'
+      eval '"$func_prefix"'"$1"'"'"'_'"${method#_}"''"$func_suffix"' {'"$attr_defs"'
         '"$method"' "$@"
       }'"'"
   done
