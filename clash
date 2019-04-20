@@ -17,7 +17,7 @@ quote() {
     esac
     output="$output$transformed_char"
   done
-  printf '%s\n' "$output"
+  printf '%s' "$output"
 }
 
 class(){
@@ -37,18 +37,22 @@ class(){
       *)
         attr_methods_defs="$attr_methods_defs"'
       eval "$1"'"'_$1"'() {
-        printf '"'"'"'"'"'%s\n'"'"'"'"'"' '"'"'"'"'"'"''"$(quote "$'"$attr_index"'")"''"'"'"'"'"'"'
+        local _tmp_getter='"'"'"'"'"'"''"$(quote "$'"$attr_index"'"; printf x)"''"'"'"'"'"'"'
+        printf '"'"'"'"'"'%s\n'"'"'"'"'"' "${_tmp_getter%x}"
       }'"'"
         if [ "$1" != 'name' ]; then
           attr_methods_defs="$attr_methods_defs"'
       eval "$1"'"'_$1"'_is() {
         eval '"'"'"$1"'"'_$1'"'"'"'"'"'"'"'() {
-          printf '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'%s\n'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"' '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''")"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
+          local _tmp_getter='"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''"; printf x)"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
+          printf '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'%s\n'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"' "${_tmp_getter%x}"
         }'"'"'"'"'"'"'"'"'
       }'"'"
         fi
         attr_defs="$attr_defs"'
-        local '"$1"'="$('"'"'$1'"'"''"_$1"')"'
+        local '"$1"'="$('"'"'$1'"'"''"_$1"'; printf x)"
+        '"$1"'="${'"$1"'%
+x}"'
         attr_index="$((attr_index + 1))"
         ;;
     esac
