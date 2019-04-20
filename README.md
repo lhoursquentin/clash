@@ -6,9 +6,7 @@ Define classes and instanciate objects in shell (dash/bash/zsh compatible) with 
 
 ## Features
 
-Most of what you would expect for oriented programming is supported:
-
-So far supported:
+Most of what you would expect from basic object-oriented programming is supported:
 
 - classes
 - objects
@@ -35,7 +33,7 @@ class Car \
   speed   \
   _start  \
 
-# Methods are defined externaly and start with an underscore
+# Methods are defined externally and start with an underscore
 _start() {
   printf 'Starting %s: ' "$name"
   if [ "$speed" -gt 100 ]; then
@@ -114,4 +112,4 @@ All these methods and attributes are generated using `eval` and playing with quo
 # Notes
 
 - Using `local` was a hard choice, considering it was the only thing preventing the framework to be strictly POSIX compliant (and compatible with ksh which uses `typeset` instead of `local` to declare local variables), but `local` can be really handy to avoid flooding all the frames with definitions and most importantly `local` prevents lower frames from overwriting upper frames variables values when using recursion.
-- This project was inspired by the amazing *bash-oo-framework* (https://github.com/niieani/bash-oo-framework), which is a huge project aiming to provide modern features to bash. While oriented object programming works perfectly well in *bash-oo-framework*, it diverges from the usual shell syntax to provide type safety and other cool features, it almost feels like a different language, which can take some time to learn. This was the motivation to write something closer to the shell syntax and more portable.
+- This project was inspired by the amazing **bash-oo-framework** (https://github.com/niieani/bash-oo-framework), which is a huge project aiming to provide modern features to bash. While oriented object programming works perfectly well in **bash-oo-framework**, it diverges from the usual shell syntax to provide type safety and other cool features, it almost feels like a different language, which can take some time to learn. This was the motivation to write something closer to the shell syntax and more portable.

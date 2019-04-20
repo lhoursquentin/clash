@@ -11,7 +11,7 @@ class Car \
   speed   \
   _start  \
 
-# Methods are defined externaly and start with an underscore
+# Methods are defined externally and start with an underscore
 _start() {
   printf 'Starting %s: ' "$name"
   if [ "$speed" -gt 100 ]; then
