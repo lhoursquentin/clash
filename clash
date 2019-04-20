@@ -1,4 +1,24 @@
-#!/bin/bash
+#!/bin/sh
+
+quote() {
+  input="${1?}"
+  output=
+  while [ -n "$input" ]; do
+    new_input="${input#?}"
+    char="${input%$new_input}"
+    input="$new_input"
+    case "$char" in
+      "'")
+        transformed_char="'"'"'"'"'"'"'"
+        ;;
+      *)
+        transformed_char="$char"
+        ;;
+    esac
+    output="$output$transformed_char"
+  done
+  printf '%s\n' "$output"
+}
 
 class(){
   name="$1"
@@ -17,13 +37,13 @@ class(){
       *)
         attr_methods_defs="$attr_methods_defs"'
       eval "$1"'"'_$1"'() {
-        printf '"'"'"'"'"'%s\n'"'"'"'"'"' '"'"'"'"'"'"''"$'"$attr_index"'"''"'"'"'"'"'"'
+        printf '"'"'"'"'"'%s\n'"'"'"'"'"' '"'"'"'"'"'"''"$(quote "$'"$attr_index"'")"''"'"'"'"'"'"'
       }'"'"
         if [ "$1" != 'name' ]; then
           attr_methods_defs="$attr_methods_defs"'
       eval "$1"'"'_$1"'_is() {
         eval '"'"'"$1"'"'_$1'"'"'"'"'"'"'"'() {
-          printf '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'%s\n'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"' '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"''$1''"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
+          printf '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'%s\n'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"' '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''")"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
         }'"'"'"'"'"'"'"'"'
       }'"'"
         fi
