@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ -z "$KSH_VERSION" ]; then
+  local=local
+else
+  local=typeset
+fi
+
 quote() {
   input="${1?}"
   output=
@@ -26,7 +32,7 @@ class(){
   attr_defs=
   class_body='
     '"$name"'() {'
-  local attr_index=1
+  "$local" attr_index=1
   set -- 'name' "$@"
   nb_args="$#"
   while [ "$nb_args" -gt 0 ]; do
@@ -37,20 +43,20 @@ class(){
       *)
         attr_methods_defs="$attr_methods_defs"'
       eval "$1"'"'_$1"'() {
-        local _tmp_getter='"'"'"'"'"'"''"$(quote "$'"$attr_index"'"; printf x)"''"'"'"'"'"'"'
+        '"$local"' _tmp_getter='"'"'"'"'"'"''"$(quote "$'"$attr_index"'"; printf x)"''"'"'"'"'"'"'
         printf '"'"'"'"'"'%s\n'"'"'"'"'"' "${_tmp_getter%x}"
       }'"'"
         if [ "$1" != 'name' ]; then
           attr_methods_defs="$attr_methods_defs"'
       eval "$1"'"'_$1"'_is() {
         eval '"'"'"$1"'"'_$1'"'"'"'"'"'"'"'() {
-          local _tmp_getter='"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''"; printf x)"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
+          '"$local"' _tmp_getter='"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''"; printf x)"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
           printf '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'%s\n'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"' "${_tmp_getter%x}"
         }'"'"'"'"'"'"'"'"'
       }'"'"
         fi
         attr_defs="$attr_defs"'
-        local '"$1"'="$('"'"'$1'"'"''"_$1"'; printf x)"
+        '"$local"' '"$1"'="$('"'"'$1'"'"''"_$1"'; printf x)"
         '"$1"'="${'"$1"'%
 x}"'
         attr_index="$((attr_index + 1))"

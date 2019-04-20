@@ -1,8 +1,16 @@
 # Clash
-Shell oriented-object programming
+Portable shell oriented-object programming
 
 # What
-Define classes and instanciate objects in shell (dash/bash/zsh compatible) with the usual shell functions syntax.
+Define classes and instanciate objects in shell with the usual shell functions syntax.
+
+Compatible with most Bourne like shells, including:
+
+- dash
+- bash
+- ksh
+- zsh
+- busybox shell (ash with bash compatibility)
 
 ## Features
 
@@ -97,7 +105,7 @@ Note: this code can be found in the `examples` folder.
 Gathering and organizing data can be painful and dirty in shell, especially when avoiding non-portable features like arrays/maps.
 Object-oriented programming is the solution to those issues, but does not exist natively in shell.
 
-The goal of this framework to provide a simple solution to the missing object paradigm and to be compatible with all shells supporting the `local` builtin (the most popular ones being bash/dash/zsh), which is the only non-POSIX feature used.
+The goal of this framework to provide a simple solution to the missing object paradigm and to be as portable as possible (working with **dash**/**bash**/**ksh**/**zsh**/**busybox ash**), the only non POSIX feature used being `local` (more info in the **notes** section).
 
 Most importantly the syntax to create and use classes and objects looks exactly like common shell, almost no parsing is done, and the grammar isn't altered using aliases, everything is a function is here.
 
@@ -111,5 +119,5 @@ All these methods and attributes are generated using `eval` and playing with quo
 
 # Notes
 
-- Using `local` was a hard choice, considering it was the only thing preventing the framework to be strictly POSIX compliant (and compatible with ksh which uses `typeset` instead of `local` to declare local variables), but `local` can be really handy to avoid flooding all the frames with definitions and most importantly `local` prevents lower frames from overwriting upper frames variables values when using recursion.
+- Using `local` (`typeset` for **ksh**) was a hard choice, considering it was the only thing preventing the framework to be strict POSIX compliant, but `local` can be really handy to avoid flooding all the frames with definitions and most importantly `local` prevents lower frames from overwriting upper frames variables values when using recursion.
 - This project was inspired by the amazing **bash-oo-framework** (https://github.com/niieani/bash-oo-framework), which is a huge project aiming to provide modern features to bash. While oriented object programming works perfectly well in **bash-oo-framework**, it diverges from the usual shell syntax to provide type safety and other cool features, it almost feels like a different language, which can take some time to learn. This was the motivation to write something closer to the shell syntax and more portable.
