@@ -1,0 +1,49 @@
+#!/bin/sh
+
+if ! . ./clash 2> /dev/null; then
+  echo 'Could not locate clash, please run the example from the clash directory'
+  exit 1
+fi >&2
+
+# Create a class
+class Car \
+  model   \
+  speed   \
+  _start  \
+
+# Methods are defined externaly and start with an underscore
+_start() {
+  printf 'Starting %s: ' "$name"
+  if [ "$speed" -gt 100 ]; then
+    echo 'Vroooooooom'
+  else
+    echo 'Vroom'
+  fi
+}
+
+# If declared the constructor is called when creating the object
+_Car() {
+  echo "New $model added to the garage"
+}
+
+# Create a new car object named 'cool_bolid', _Car function is called
+Car cool_bolid Ferrari 200
+
+# Create another one, _Car function is called
+Car family_truck Toyota 90
+
+# Call the _start method
+cool_bolid_start
+
+family_truck_start
+
+# Check the truck speed (generated getter)
+printf 'Family truck speed: '
+family_truck_speed
+
+# Modify the speed (generated setters are suffixed by _is)
+echo 'Upgrading truck engine...'
+family_truck_speed_is 120
+
+# start it again
+family_truck_start
