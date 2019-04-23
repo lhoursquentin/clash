@@ -37,7 +37,7 @@ Not supported:
 ```bash
 # Create a class
 class Car \
-  model   \
+  brand   \
   speed   \
   _start  \
 
@@ -53,7 +53,7 @@ _start() {
 
 # If declared, the constructor is called when creating the object
 _Car() {
-  echo "New $model added to the garage"
+  echo "New $brand added to the garage"
 }
 ```
 
@@ -73,7 +73,6 @@ New Toyota added to the garage
 ```bash
 # Call the _start method
 cool_bolid_start
-
 family_truck_start
 ```
 
@@ -84,7 +83,7 @@ Starting family_truck: Vroom
 
 ```bash
 # check the family truck speed (generated getter)
-family_truck_speed
+echo "Family truck speed: $(family_truck_speed)"
 
 # upgrade the engine (generated setters are suffixed by _is)
 family_truck_speed_is 120
@@ -94,7 +93,7 @@ family_truck_start
 ```
 
 ```
-90
+Family truck speed: 90
 Starting family_truck: Vroooooooom
 ```
 
