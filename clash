@@ -70,7 +70,7 @@ class(){
   for method do
     method_defs="$method_defs"'
       eval '"$func_prefix"'"$1"'"'"'_'"${method#_}"''"$func_suffix"' {'"$attr_defs"'
-        '"$method"' "$@"
+        '"$name$method"' "$@"
       }'"'"
   done
   class_body="$class_body"'

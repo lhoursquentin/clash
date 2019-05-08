@@ -6,7 +6,7 @@ if ! . ./clash 2> /dev/null; then
 fi >&2
 
 # method example
-_find_value() {
+btree_find_value() {
   printf 'Visiting node %s (%s)\n' "$name" "$value"
   if [ "$1" -eq "$value" ]; then
     echo 'Found value'
