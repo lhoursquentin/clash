@@ -62,6 +62,9 @@ class(){
         if [ "$1" != 'name' ]; then
           attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {
+        if [ "$self" = '"'"'"$1"'"'"' ]; then
+          '"$1"'="$1"
+        fi
         eval '"$func_prefix"''"'"'"$1"'"'_$1'"'"'"'"'"'"'"''"$func_suffix"' {
           '"$local"' _tmp_getter='"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''"; printf x)"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
           printf %s "${_tmp_getter%x}"
