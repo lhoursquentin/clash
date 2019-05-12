@@ -67,6 +67,8 @@ class(){
     nb_args="$((nb_args - 1))"
     shift
   done
+  attr_defs="$attr_defs"'
+        '"$local"' self="$name"'
   for method do
     method_defs="$method_defs"'
       eval '"$func_prefix"'"$1"'"'"'_'"${method#_}"''"$func_suffix"' {'"$attr_defs"'
