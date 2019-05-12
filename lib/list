@@ -1,0 +1,67 @@
+#!/bin/sh
+
+if ! . ./clash 2> /dev/null; then
+  echo 'Could not locate clash'
+  exit 1
+fi >&2
+
+class Node \
+  value    \
+  next     \
+
+class List       \
+  head_          \
+  tail_          \
+  created_count_ \
+  length_        \
+  _append        \
+  _create_node   \
+  _index         \
+  _insert        \
+  _length        \
+
+List_create_node() {
+  # create a unique name
+  node_name=List_"$name"_"$created_count_"
+  "$self"_created_count__is "$((created_count_ + 1))"
+  Node "$node_name" "$1" "$2"
+}
+
+List_append() {
+  "$self"_create_node "$1"
+  if [ "$length_" -eq 0 ]; then
+    "$self"_head__is "$node_name"
+  else
+    "$tail_"_next_is "$node_name"
+  fi
+  "$self"_tail__is "$node_name"
+  "$self"_length__is "$((length_ + 1))"
+}
+
+List_index() {
+  index=0
+  node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    if [ "$("$node"_value)" = "$1" ]; then
+      printf '%s\n' "$index"
+      return 0
+    fi
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  printf 'Value not found: %s\n' "$1" >&2
+  return 1
+}
+
+_List() {
+  shift # name
+  "$self"_length__is 0
+  "$self"_created_count__is 0
+  for value do
+    "$self"_append "$value"
+  done
+}
+
+List my_list 'abc' 'def' 'ghi' 'jkl' 'mno'
+
+my_list_index "$1"
