@@ -44,11 +44,21 @@ class(){
         set -- "$@" "$1"
         ;;
       *)
-        attr_methods_defs="$attr_methods_defs"'
+        case "$1" in
+          *_)
+            attr_methods_defs="$attr_methods_defs"'
+      eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {
+        :
+      }'"'"
+            ;;
+          *)
+            attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {
         '"$local"' _tmp_getter='"'"'"'"'"'"''"$(quote "$'"$attr_index"'"; printf x)"''"'"'"'"'"'"'
         printf %s "${_tmp_getter%x}"
       }'"'"
+            ;;
+        esac
         if [ "$1" != 'name' ]; then
           attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {
