@@ -15,11 +15,15 @@ class List       \
   created_count_ \
   length_        \
   _append        \
+  _clear         \
   _create_node   \
   _get           \
   _index         \
   _insert        \
   _length        \
+  _pop           \
+  _pretty_print  \
+  _remove        \
 
 List_create_node() {
   # create a unique name
@@ -43,7 +47,7 @@ List_index() {
   index=0
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
-    if [ "$("$node"_value)" = "$1" ]; then
+    if [ "$("$node"_value; printf x)" = "$1"x ]; then
       printf '%s\n' "$index"
       return 0
     fi
@@ -60,7 +64,7 @@ List_get() {
      [ "$(($1 * -1))" -ge "$length_" ]
   then
     printf 'Invalid index: %s\n' "$1"
-    exit
+    return 1
   fi >&2
 
   if [ "$1" -lt 0 ]; then
@@ -74,7 +78,58 @@ List_get() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  printf '%s\n' "$("$node"_value)"
+
+  value="$("$node"_value; printf x)"
+  value="${value%x}"
+  printf '%s\n' "$value"
+}
+
+List_pretty_print() {
+  index=0
+  node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    value="$("$node"_value; printf x)"
+    value="${value%x}"
+    printf '%s: %s\n' "$index" "$value"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+}
+
+List_remove() {
+  index=0
+  node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    if [ "$("$node"_value; printf x)" = "$1"x ]; then
+      if [ "$node" = "$tail_" ]; then
+        "$self"_tail__is "$prev"
+        "$prev"_next_is ''
+      elif [ "$node" = "$head_" ]; then
+        "$self"_head__is "$("$node"_next)"
+      else
+        "$prev"_next_is "$("$node"_next)"
+      fi
+      "$self"_length__is "$((length_ - 1))"
+      return
+    fi
+    prev="$node"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  printf 'Value not found: %s\n' "$1" >&2
+  return 1
+}
+
+List_pop() {
+  :
+}
+
+List_clear() {
+  :
+}
+
+List_insert() {
+  :
 }
 
 _List() {
