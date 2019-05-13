@@ -16,6 +16,7 @@ class List       \
   length_        \
   _append        \
   _create_node   \
+  _get           \
   _index         \
   _insert        \
   _length        \
@@ -53,6 +54,29 @@ List_index() {
   return 1
 }
 
+List_get() {
+  if [ -z "$1" ] ||
+     [ "$1" -ge "$length_" ] ||
+     [ "$(($1 * -1))" -ge "$length_" ]
+  then
+    printf 'Invalid index: %s\n' "$1"
+    exit
+  fi >&2
+
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  index=0
+  node="$head_"
+  while [ "$index" -lt "$target_index" ]; do
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  printf '%s\n' "$("$node"_value)"
+}
+
 _List() {
   shift # name
   "$self"_length__is 0
@@ -61,7 +85,3 @@ _List() {
     "$self"_append "$value"
   done
 }
-
-List my_list 'abc' 'def' 'ghi' 'jkl' 'mno'
-
-my_list_index "$1"
