@@ -16,7 +16,6 @@ class List       \
   length_        \
   _append        \
   _clear         \
-  _create_node   \
   _get           \
   _index         \
   _insert        \
@@ -37,22 +36,15 @@ check_index_within_range() {
   fi >&2
 }
 
-List_create_node() {
-  # create a unique name
-  new_node=List_"$name"_"$created_count_"
-  "$self"_created_count__is "$((created_count_ + 1))"
-  Node "$new_node" "$1" "$2"
-}
-
 List_append() {
-  local new_node
-  "$self"_create_node "$1"
+  local Node_generated_name
+  Node _ "$1"
   if [ "$length_" -eq 0 ]; then
-    "$self"_head__is "$new_node"
+    "$self"_head__is "$Node_generated_name"
   else
-    "$tail_"_next_is "$new_node"
+    "$tail_"_next_is "$Node_generated_name"
   fi
-  "$self"_tail__is "$new_node"
+  "$self"_tail__is "$Node_generated_name"
   "$self"_length__is "$((length_ + 1))"
 }
 
@@ -99,7 +91,7 @@ List_pretty_print() {
   while [ "$index" -lt "$length_" ]; do
     value="$("$node"_value; printf x)"
     value="${value%x}"
-    printf '%s: %s\n' "$index" "$value"
+    printf '%s: %s (%s)\n' "$index" "$value" "$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
@@ -148,15 +140,15 @@ List_insert() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  local new_node
-  "$self"_create_node "$2" "$node"
+  local Node_generated_name
+  Node _ "$2" "$node"
   if [ -n "$prev" ]; then
-    "$prev"_next_is "$new_node"
+    "$prev"_next_is "$Node_generated_name"
   fi
   if [ "$prev" = "$tail_" ]; then
-    "$self"_tail__is "$new_node"
+    "$self"_tail__is "$Node_generated_name"
   elif [ "$node" = "$head_" ]; then
-    "$self"_head__is "$new_node"
+    "$self"_head__is "$Node_generated_name"
   fi
   "$self"_length__is "$((length_ + 1))"
 }
