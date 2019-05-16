@@ -12,14 +12,12 @@ class Node \
 class List       \
   head_          \
   tail_          \
-  created_count_ \
   length_        \
   _append        \
   _clear         \
   _get           \
   _index         \
   _insert        \
-  _length        \
   _pop           \
   _pretty_print  \
   _remove        \
@@ -156,7 +154,6 @@ List_insert() {
 _List() {
   shift # name
   "$self"_length__is 0
-  "$self"_created_count__is 0
   for value do
     "$self"_append "$value"
   done
