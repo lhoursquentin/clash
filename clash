@@ -29,10 +29,15 @@ quote() {
   printf '%s' "$output"
 }
 
+del() {
+  delete_"$1"
+}
+
 class(){
   name="$1"
   shift
   attr_defs=
+  delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {'
   class_body='
     '"$func_prefix$name$func_suffix"' {
        if [ "$1" = _ ]; then
@@ -50,6 +55,8 @@ class(){
         set -- "$@" "$1"
         ;;
       *)
+        delete_fn="$delete_fn"'
+        unset -f '"'"'"$1"'"'"'_'"$1"''
         case "$1" in
           *_)
             attr_methods_defs="$attr_methods_defs"'
@@ -66,6 +73,8 @@ class(){
             ;;
         esac
         if [ "$1" != 'name' ]; then
+          delete_fn="$delete_fn"'
+          unset -f '"'"'"$1"'"'"'_'"$1"'_is'
           attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {
         if [ "$self" = '"'"'"$1"'"'"' ]; then
@@ -89,14 +98,20 @@ class(){
   attr_defs="$attr_defs"'
         '"$local"' self="$name"'
   for method do
+    delete_fn="$delete_fn"'
+    unset -f '"'"'"$1"'"'"''"$method"''
     method_defs="$method_defs"'
       eval '"$func_prefix"'"$1"'"'"'_'"${method#_}"''"$func_suffix"' {'"$attr_defs"'
         '"$name$method"' "$@"
       }'"'"
   done
+  delete_fn="$delete_fn"'
+    }'"'"'
+  '
   class_body="$class_body"'
       '"$method_defs"'
       '"$attr_methods_defs"'
+      '"$delete_fn"'
       eval '"'"''"$attr_defs"''"'"'
       _'"$name"' "$@" 2> /dev/null || :
     }
