@@ -5,9 +5,9 @@ if ! . ./clash 2> /dev/null; then
   exit 1
 fi >&2
 
-class Node \
-  value    \
-  next     \
+class List_Node \
+  value         \
+  next          \
 
 class List       \
   head_          \
@@ -35,14 +35,14 @@ check_index_within_range() {
 }
 
 List_append() {
-  local Node_generated_name
-  Node _ "$1"
+  local List_Node_generated_name
+  List_Node _ "$1"
   if [ "$length_" -eq 0 ]; then
-    "$self"_head__is "$Node_generated_name"
+    "$self"_head__is "$List_Node_generated_name"
   else
-    "$tail_"_next_is "$Node_generated_name"
+    "$tail_"_next_is "$List_Node_generated_name"
   fi
-  "$self"_tail__is "$Node_generated_name"
+  "$self"_tail__is "$List_Node_generated_name"
   "$self"_length__is "$((length_ + 1))"
 }
 
@@ -83,8 +83,8 @@ List_get() {
 
 List_pretty_print() {
   printf '== %s == (length: %s, head: %s, tail: %s)
-' "$self" "$length_" "$([ -n "$head" ] && "$head_"_value)" \
-                     "$([ -n "$tail" ] && "$tail_"_value)"
+' "$self" "$length_" "$([ -n "$head_" ] && "$head_"_value)" \
+                     "$([ -n "$tail_" ] && "$tail_"_value)"
   index=0
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
@@ -178,15 +178,15 @@ List_insert() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  local Node_generated_name
-  Node _ "$2" "$node"
+  local List_Node_generated_name
+  List_Node _ "$2" "$node"
   if [ -n "$prev" ]; then
-    "$prev"_next_is "$Node_generated_name"
+    "$prev"_next_is "$List_Node_generated_name"
   fi
   if [ "$prev" = "$tail_" ]; then
-    "$self"_tail__is "$Node_generated_name"
+    "$self"_tail__is "$List_Node_generated_name"
   elif [ "$node" = "$head_" ]; then
-    "$self"_head__is "$Node_generated_name"
+    "$self"_head__is "$List_Node_generated_name"
   fi
   "$self"_length__is "$((length_ + 1))"
 }
