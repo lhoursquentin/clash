@@ -21,6 +21,7 @@ class List       \
   _pop           \
   _pretty_print  \
   _remove        \
+  _set           \
 
 check_index_within_range() {
   # 1 -> index
@@ -169,11 +170,16 @@ List_clear() {
 }
 
 List_insert() {
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$((length_ + 1))" || return
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
   index=0
   node="$head_"
   prev=
-  while [ "$index" -lt "$1" ]; do
+  while [ "$index" -lt "$target_index" ]; do
     prev="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
@@ -189,6 +195,24 @@ List_insert() {
     "$self"_head__is "$List_Node_generated_name"
   fi
   "$self"_length__is "$((length_ + 1))"
+}
+
+List_set() {
+  check_index_within_range "$1" "$length_" || return
+
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  index=0
+  node="$head_"
+  while [ "$index" -lt "$target_index" ]; do
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+
+  "$node"_value_is "$2"
 }
 
 _List() {
