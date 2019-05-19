@@ -18,6 +18,7 @@ class Vector     \
   _pop           \
   _pretty_print  \
   _remove        \
+  _set           \
   _new_node_     \
   _shift_left_   \
   _shift_right_  \
@@ -54,6 +55,7 @@ Vector_shift_left_() {
 Vector_shift_right_() {
   index="$(($length_ - 1))"
   "$self"_append
+  local target_index
   target_index="$1"
   while [ "$index" -ge "$target_index" ]; do
     local value="$("$self"_Vector_Node_"$index"_value; printf x)"
@@ -84,6 +86,7 @@ Vector_index() {
 Vector_get() {
   check_index_within_range "$1" "$length_" || return
 
+  local target_index
   if [ "$1" -lt 0 ]; then
     target_index="$((length_ + $1))"
   else
@@ -115,15 +118,16 @@ Vector_pop() {
   set -- "${1-0}"
   check_index_within_range "$1" "$length_" || return
 
+  local target_index
   if [ "$1" -lt 0 ]; then
     target_index="$((length_ + $1))"
   else
     target_index="$1"
   fi
 
-  value="$("$self"_Vector_Node_"$1"_value; printf x)"
+  value="$("$self"_Vector_Node_"$target_index"_value; printf x)"
   value="${value%x}"
-  "$self"_shift_left_ "$1"
+  "$self"_shift_left_ "$target_index"
   printf %s "$value"
 }
 
@@ -138,8 +142,26 @@ Vector_clear() {
 
 Vector_insert() {
   check_index_within_range "$1" "$((length_ + 1))" || return
-  "$self"_shift_right_ "$1"
-  "$self"_Vector_Node_"$1"_value_is "$2"
+  local target_index
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  "$self"_shift_right_ "$target_index"
+  "$self"_Vector_Node_"$target_index"_value_is "$2"
+}
+
+Vector_set() {
+  check_index_within_range "$1" "$length_" || return
+
+  local target_index
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  "$self"_Vector_Node_"$target_index"_value_is "$2"
 }
 
 _Vector() {
