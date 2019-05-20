@@ -39,15 +39,17 @@ check_index_within_range() {
 }
 
 List_append() {
-  local List_Node_generated_name
-  List_Node _ "$1" '' "$tail_"
-  if [ "$length_" -eq 0 ]; then
-    "$self"_head__is "$List_Node_generated_name"
-  else
-    "$tail_"_next_is "$List_Node_generated_name"
-  fi
-  "$self"_tail__is "$List_Node_generated_name"
-  "$self"_length__is "$((length_ + 1))"
+  for value do
+    local List_Node_generated_name
+    List_Node _ "$value" '' "$tail_"
+    if [ "$length_" -eq 0 ]; then
+      "$self"_head__is "$List_Node_generated_name"
+    else
+      "$tail_"_next_is "$List_Node_generated_name"
+    fi
+    "$self"_tail__is "$List_Node_generated_name"
+    "$self"_length__is "$((length_ + 1))"
+  done
 }
 
 List_index() {
@@ -227,7 +229,5 @@ List_set() {
 _List() {
   shift # name
   "$self"_length__is 0
-  for value do
-    "$self"_append "$value"
-  done
+  "$self"_append "$@"
 }
