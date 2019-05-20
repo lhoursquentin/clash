@@ -18,6 +18,7 @@ class List       \
   tail_          \
   _append        \
   _clear         \
+  _find          \
   _foreach       \
   _get           \
   _index         \
@@ -247,6 +248,23 @@ List_print() {
     "$self"_foreach node_printer
   )
   echo
+}
+
+# Find a value matching a given predicate
+List_find() {
+  local index=0
+  local node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    local node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
+      printf %s "$node_value"
+      return 0
+    fi
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  return 1
 }
 
 List_foreach() {
