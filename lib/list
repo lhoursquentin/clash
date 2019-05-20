@@ -18,13 +18,16 @@ class List       \
   tail_          \
   _append        \
   _clear         \
+  _foreach       \
   _get           \
   _index         \
   _insert        \
   _pop           \
   _pretty_print  \
+  _print         \
   _remove        \
   _set           \
+  _append_node_  \
 
 check_index_within_range() {
   # 1 -> index
@@ -38,17 +41,22 @@ check_index_within_range() {
   fi >&2
 }
 
+List_append_node_() {
+  "$1"_previous_is "$tail_"
+  if [ "$length_" -eq 0 ]; then
+    "$self"_head__is "$1"
+  else
+    "$tail_"_next_is "$1"
+  fi
+  "$self"_tail__is "$1"
+  "$self"_length__is "$((length_ + 1))"
+}
+
 List_append() {
   for value do
     local List_Node_generated_name
-    List_Node _ "$value" '' "$tail_"
-    if [ "$length_" -eq 0 ]; then
-      "$self"_head__is "$List_Node_generated_name"
-    else
-      "$tail_"_next_is "$List_Node_generated_name"
-    fi
-    "$self"_tail__is "$List_Node_generated_name"
-    "$self"_length__is "$((length_ + 1))"
+    List_Node _ "$value"
+    "$self"_append_node_ "$List_Node_generated_name"
   done
 }
 
@@ -224,6 +232,21 @@ List_set() {
   done
 
   "$node"_value_is "$2"
+}
+
+List_print() {
+  "$self"_foreach printf '%s '
+  echo
+}
+
+List_foreach() {
+  local index=0
+  local node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    "$@" "$("$node"_value)"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
 }
 
 _List() {
