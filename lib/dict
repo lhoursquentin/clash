@@ -1,0 +1,101 @@
+#!/bin/sh
+
+if ! . ./clash 2> /dev/null; then
+  echo 'Could not locate clash'
+  exit 1
+fi >&2
+
+. ./lib/list
+
+class Dict_Tuple \
+  key            \
+  value          \
+  _print         \
+
+Dict_Tuple_print() {
+  printf '('
+  if ! "$key"_print 2> /dev/null; then
+    printf '%s' "$key"
+  fi
+  printf ', '
+  if ! "$value"_print 2> /dev/null; then
+    printf '%s' "$value"
+  fi
+  printf ')'
+}
+
+class Dict       \
+  hashes_        \
+  _clear         \
+  _get           \
+  _keys          \
+  _length        \
+  _pop           \
+  _pretty_print  \
+  _set           \
+  _values        \
+  _hash_         \
+
+Dict_hash_() {
+  str="$1"
+  hash_value=0
+  while [ -n "$str" ]; do
+    tmp="$str"
+    str="${str#?}"
+    char="${tmp%$str}"
+    char_num="$(printf %d "'$char")"
+    hash_value="$((hash_value + char_num))"
+  done
+  printf '%s\n' "$((hash_value % 8))"
+}
+
+Dict_get() {
+  local hash_value="$("$self"_hash_ "$1")"
+  local tuple
+  if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
+    tuple="$(
+      matching_tuple() {
+        [ "$("$2"_key; printf x)" = "$1"x ]
+      }
+      "$tuple_list"_find matching_tuple "$1"
+    )"
+  then
+    local value="$("$tuple"_value; printf x)"
+    printf %s "${value%x}"
+  else
+    printf 'Key not found: %s\n' "$1" >&2
+  fi
+}
+
+Dict_pretty_print() {
+  printf '== %s == (nb hashes: %s)\n' "$self" "$("$hashes_"_length_)"
+
+  (
+    tuple_printer() {
+      printf '%s -> ' "$1"
+      "$1"_print
+    }
+    "$hashes_"_foreach tuple_printer
+  )
+}
+
+Dict_set() {
+  local hash_value="$("$self"_hash_ "$1")"
+  local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
+  local Dict_Tuple_generated_name
+  Dict_Tuple _ "$1" "$2"
+  if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
+    "$tuple_list"_append "$Dict_Tuple_generated_name"
+  else
+    local List_generated_name
+    List _ "$Dict_Tuple_generated_name"
+    List_Node "$node"_tuple_list "$List_generated_name"
+    "$hashes_"_append_node_ "$node"_tuple_list
+  fi
+}
+
+_Dict() {
+  local List_generated_name
+  List _
+  "$self"_hashes__is "$List_generated_name"
+}
