@@ -5,9 +5,12 @@ if ! . ./clash 2> /dev/null; then
   exit 1
 fi >&2
 
+# TODO could save some iterations by making use of the double link properties
+
 class List_Node \
   value         \
   next          \
+  previous      \
 
 class List       \
   head_          \
@@ -37,7 +40,7 @@ check_index_within_range() {
 
 List_append() {
   local List_Node_generated_name
-  List_Node _ "$1"
+  List_Node _ "$1" '' "$tail_"
   if [ "$length_" -eq 0 ]; then
     "$self"_head__is "$List_Node_generated_name"
   else
@@ -102,19 +105,22 @@ List_remove() {
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
     if [ "$("$node"_value; printf x)" = "$1"x ]; then
+      next_node="$("$node"_next)"
       if [ "$node" = "$tail_" ]; then
-        "$self"_tail__is "$prev"
-        "$prev"_next_is ''
+        "$self"_tail__is "$prev_node"
+        "$prev_node"_next_is ''
       elif [ "$node" = "$head_" ]; then
-        "$self"_head__is "$("$node"_next)"
+        "$self"_head__is "$next_node"
+        "$next_node"_previous_is ''
       else
-        "$prev"_next_is "$("$node"_next)"
+        "$prev_node"_next_is "$next_node"
+        "$next_node"_previous_is "$prev_node"
       fi
       del "$node"
       "$self"_length__is "$((length_ - 1))"
       return
     fi
-    prev="$node"
+    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
@@ -134,18 +140,21 @@ List_pop() {
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do
-    prev="$node"
+    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
 
+  next_node="$("$node"_next)"
   if [ "$node" = "$tail_" ]; then
-    "$self"_tail__is "$prev"
-    "$prev"_next_is ''
+    "$self"_tail__is "$prev_node"
+    "$prev_node"_next_is ''
   elif [ "$node" = "$head_" ]; then
-    "$self"_head__is "$("$node"_next)"
+    "$self"_head__is "$next_node"
+    "$next_node"_previous_is ''
   else
-    "$prev"_next_is "$("$node"_next)"
+    "$prev_node"_next_is "$next_node"
+    "$next_node"_previous_is "$prev_node"
   fi
 
   value="$("$node"_value; printf x)"
@@ -178,18 +187,18 @@ List_insert() {
   fi
   index=0
   node="$head_"
-  prev=
+  prev_node=
   while [ "$index" -lt "$target_index" ]; do
-    prev="$node"
+    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
   local List_Node_generated_name
-  List_Node _ "$2" "$node"
-  if [ -n "$prev" ]; then
-    "$prev"_next_is "$List_Node_generated_name"
+  List_Node _ "$2" "$node" "$prev_node"
+  if [ -n "$prev_node" ]; then
+    "$prev_node"_next_is "$List_Node_generated_name"
   fi
-  if [ "$prev" = "$tail_" ]; then
+  if [ "$prev_node" = "$tail_" ]; then
     "$self"_tail__is "$List_Node_generated_name"
   elif [ "$node" = "$head_" ]; then
     "$self"_head__is "$List_Node_generated_name"
