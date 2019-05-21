@@ -34,13 +34,14 @@ del() {
 }
 
 class(){
-  name="$1"
+  "$local" name="$1"
   shift
-  attr_defs=
-  attr_methods_defs=
-  delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {
+  "$local" attr_defs=
+  "$local" attr_methods_defs=
+  "$local" method_defs=
+  "$local" delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {
         unset -f delete_'"'"'"$1"'"'"''
-  class_body='
+  "$local" class_body='
     '"$func_prefix$name$func_suffix"' {
        if [ "$1" = _ ]; then
          shift
@@ -50,7 +51,7 @@ class(){
        fi'
   "$local" attr_index=1
   set -- 'name' "$@"
-  nb_args="$#"
+  "$local" nb_args="$#"
   while [ "$nb_args" -gt 0 ]; do
     case "$1" in
       _*)
