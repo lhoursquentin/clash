@@ -1,0 +1,229 @@
+#!/bin/sh
+
+. ./test/testlib/assert
+
+. ./lib/list
+
+# List creation
+assert_true List mylist 'abc' 'def' 'ghi' 'jkl' 'mno' -- 'Failed list creation'
+assert_out mylist_length_ -- 5
+
+assert_out mylist_get 0 -- 'abc'
+assert_out mylist_get -0 -- 'abc'
+assert_out mylist_index 'abc' -- 0
+assert_out mylist_get 1 -- 'def'
+assert_out mylist_get -4 -- 'def'
+assert_out mylist_index 'def' -- 1
+assert_out mylist_get 2 -- 'ghi'
+assert_out mylist_get -3 -- 'ghi'
+assert_out mylist_index 'ghi' -- 2
+assert_out mylist_get 3 -- 'jkl'
+assert_out mylist_get -2 -- 'jkl'
+assert_out mylist_index 'jkl' -- 3
+assert_out mylist_get 4 -- 'mno'
+assert_out mylist_get -1 -- 'mno'
+assert_out mylist_index 'mno' -- 4
+
+assert_out mylist_print -- 'abc def ghi jkl mno 
+'
+assert_out "$(mylist_head_)"_value -- 'abc'
+assert_out "$(mylist_tail_)"_value -- 'mno'
+
+# Append elt
+assert_true mylist_append 'pql' -- 'Failed to append element'
+assert_out mylist_length_ -- 6
+assert_out mylist_get 5 -- 'pql'
+assert_out mylist_print -- 'abc def ghi jkl mno pql 
+'
+assert_out "$(mylist_head_)"_value -- 'abc'
+assert_out "$(mylist_tail_)"_value -- 'pql'
+
+# Insert middle elt
+assert_true mylist_insert 2 'middle' -- 'Failed to insert middle element'
+assert_out mylist_length_ -- 7
+assert_out mylist_print -- 'abc def middle ghi jkl mno pql 
+'
+assert_out "$(mylist_head_)"_value -- 'abc'
+assert_out "$(mylist_tail_)"_value -- 'pql'
+
+# Insert head elt
+assert_true mylist_insert 0 'begin' -- 'Failed to insert element at the start'
+assert_out mylist_length_ -- 8
+assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql 
+'
+assert_out "$(mylist_head_)"_value -- 'begin'
+assert_out "$(mylist_tail_)"_value -- 'pql'
+
+# Insert tail elt
+assert_true mylist_insert 8 'end' -- 'Failed to insert element at the end'
+assert_out mylist_length_ -- 9
+mylist_pretty_print
+assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql end 
+'
+assert_out "$(mylist_head_)"_value -- 'begin'
+assert_out "$(mylist_tail_)"_value -- 'end'
+
+# Remove middle elt
+assert_out mylist_get 3 -- 'middle'
+assert_true mylist_remove 'middle' -- 'Failed to remove middle element'
+assert_out mylist_get 3 -- 'ghi'
+assert_out mylist_length_ -- 8
+assert_out mylist_print -- 'begin abc def ghi jkl mno pql end 
+'
+assert_out "$(mylist_head_)"_value -- 'begin'
+assert_out "$(mylist_tail_)"_value -- 'end'
+
+# Remove head elt
+assert_out mylist_get 0 -- 'begin'
+assert_true mylist_remove 'begin' -- 'Failed to remove head element'
+assert_out mylist_get 0 -- 'abc'
+assert_out mylist_length_ -- 7
+assert_out mylist_print -- 'abc def ghi jkl mno pql end 
+'
+assert_out "$(mylist_head_)"_value -- 'abc'
+assert_out "$(mylist_tail_)"_value -- 'end'
+
+# Remove tail elt
+assert_out mylist_get -1 -- 'end'
+assert_out mylist_get 6 -- 'end'
+assert_true mylist_remove 'end' -- 'Failed to remove tail element'
+assert_out mylist_length_ -- 6
+assert_out mylist_get -1 -- 'pql'
+assert_out mylist_get 5 -- 'pql'
+assert_out mylist_print -- 'abc def ghi jkl mno pql 
+'
+assert_out "$(mylist_head_)"_value -- 'abc'
+assert_out "$(mylist_tail_)"_value -- 'pql'
+
+# Pop middle elt
+assert_out mylist_get 2 -- 'ghi'
+assert_out mylist_pop 2 -- 'ghi'
+assert_out mylist_length_ -- 5
+assert_out mylist_get 2 -- 'jkl'
+assert_out mylist_print -- 'abc def jkl mno pql 
+'
+assert_out "$(mylist_head_)"_value -- 'abc'
+assert_out "$(mylist_tail_)"_value -- 'pql'
+
+# Pop head elt
+assert_out mylist_get 0 -- 'abc'
+assert_out mylist_pop 0 -- 'abc'
+assert_out mylist_length_ -- 4
+assert_out mylist_get 0 -- 'def'
+assert_out mylist_print -- 'def jkl mno pql 
+'
+assert_out "$(mylist_head_)"_value -- 'def'
+assert_out "$(mylist_tail_)"_value -- 'pql'
+
+# Pop tail elt
+assert_out mylist_get -1 -- 'pql'
+assert_out mylist_get 3 -- 'pql'
+assert_out mylist_pop -1 -- 'pql'
+assert_out mylist_length_ -- 3
+assert_out mylist_get -1 -- 'mno'
+assert_out mylist_get 2 -- 'mno'
+assert_out mylist_print -- 'def jkl mno 
+'
+assert_out "$(mylist_head_)"_value -- 'def'
+assert_out "$(mylist_tail_)"_value -- 'mno'
+
+# Change existing element value
+mylist_set 1 foo
+assert_out mylist_length_ -- 3
+assert_out mylist_print -- 'def foo mno 
+'
+
+# Check print uses the first char of the IFS to separate elements
+OLD_IFS="$IFS"
+IFS=',/:'
+assert_out mylist_print -- 'def,foo,mno,
+'
+# Same behavior when IFS has a single char
+IFS=':'
+assert_out mylist_print -- 'def:foo:mno:
+'
+IFS=
+# When IFS is empty or unset the default should be space
+assert_out mylist_print -- 'def foo mno 
+'
+unset IFS
+assert_out mylist_print -- 'def foo mno 
+'
+IFS="$OLD_IFS"
+
+# Append multiple values
+assert_true mylist_append 'funk' 'folk' -- 'Failed to append multiple elts'
+assert_out mylist_length_ -- 5
+assert_out mylist_print -- 'def foo mno funk folk 
+'
+assert_out "$(mylist_head_)"_value -- 'def'
+assert_out "$(mylist_tail_)"_value -- 'folk'
+
+# Print every value with foreach
+assert_out mylist_foreach printf '%s, ' -- 'def, foo, mno, funk, folk, '
+
+# Foreach should return 0 even if the calls do not
+assert_true mylist_foreach false -- 'Failed to return true for non-zero calls'
+
+# Find first value matching condition
+regex_match() {
+  expr "$2" : "$1" > /dev/null
+}
+
+assert_out mylist_find test folk = -- 'folk'
+assert_out mylist_find regex_match 'f.*' -- 'foo'
+
+# Failure to find a value matching the condition must return a non-zero value
+assert_false mylist_find false -- 'Find failed to return a non-zero value'
+
+# Create a new list with all values matching the condition
+assert_true mylist_filter filtered_list regex_match 'f.*' -- 'Failed to filter'
+assert_out filtered_list_print -- 'foo funk folk 
+'
+assert_out filtered_list_length_ -- 3
+
+# Check that filtering with a non matching condition creates an empty list
+assert_true mylist_filter filtered_list_no_match false -- 'Failed to filter'
+assert_out filtered_list_no_match_length_ -- 0
+
+# Check clear resets head/tail + length == 0
+first_node="$(mylist_head_)"
+last_node="$(mylist_tail_)"
+assert_true mylist_clear -- 'Failed to clear'
+assert_out mylist_length_ -- 0
+assert_out mylist_head_ -- ''
+assert_out mylist_tail_ -- ''
+
+# Nodes should have been deleted by the clear call
+assert_false "$first_node"_value -- 'Failed to clean nodes'
+assert_false "$last_node"_value -- 'Failed to clean nodes'
+
+# Check deletion
+assert_true del mylist -- 'Failed to delete list'
+assert_false mylist_append 'hey' -- 'Failed to properly delete methods'
+assert_false mylist_head_ -- 'Failed to properly delete attributes getters'
+assert_false mylist_head__is -- 'Failed to properly delete attributes setters'
+
+# Check print method call underlying object print method
+class Car \
+  speed   \
+  _print  \
+
+Car_print () {
+  printf '%s: %s km/h' "$self" "$speed"
+}
+
+Car foo 100
+Car bar 200
+Car baz 150
+List mycars foo bar baz
+
+OLD_IFS="$IFS"
+IFS='
+'
+assert_out mycars_print -- 'foo: 100 km/h
+bar: 200 km/h
+baz: 150 km/h
+
+'
+IFS="$OLD_IFS"
