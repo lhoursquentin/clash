@@ -67,7 +67,7 @@ List_index() {
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
     if [ "$("$node"_value; printf x)" = "$1"x ]; then
-      printf '%s\n' "$index"
+      printf %s "$index"
       return 0
     fi
     node="$("$node"_next)"
@@ -239,12 +239,15 @@ List_set() {
 List_print() {
   (
     node_printer() {
-      OLD_PATH="$PATH"
+      local OLD_PATH="$PATH"
+      PATH=
       if ! PATH="$OLD_PATH" "$1"_print 2> /dev/null; then
         printf '%s' "$1"
       fi
       PATH="$OLD_PATH"
-      printf ' '
+      local tmp="${IFS#?}"
+      local delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
+      printf %s "${delim:- }" # Use a space if IFS is unset
     }
     "$self"_foreach node_printer
   )
