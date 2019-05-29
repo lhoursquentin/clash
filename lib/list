@@ -56,7 +56,6 @@ List_append_node_() {
 
 List_append() {
   for value do
-    local List_Node_generated_name
     List_Node _ "$value"
     "$self"_append_node_ "$List_Node_generated_name"
   done
@@ -205,8 +204,8 @@ List_insert() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  local List_Node_generated_name
   List_Node _ "$2" "$node" "$prev_node"
+  "$local" List_Node_generated_name="$List_Node_generated_name"
   if [ -n "$prev_node" ]; then
     "$prev_node"_next_is "$List_Node_generated_name"
   fi
@@ -239,15 +238,15 @@ List_set() {
 List_print() {
   (
     node_printer() {
-      local OLD_PATH="$PATH"
+      "$local" OLD_PATH="$PATH"
       PATH=
       if ! PATH="$OLD_PATH" "$1"_print 2> /dev/null; then
         PATH="$OLD_PATH"
         printf '%s' "$1"
       fi
       PATH="$OLD_PATH"
-      local tmp="${IFS#?}"
-      local delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
+      "$local" tmp="${IFS#?}"
+      "$local" delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
       printf %s "${delim:- }" # Use a space if IFS is unset
     }
     "$self"_foreach node_printer
@@ -257,10 +256,10 @@ List_print() {
 
 # Find a value matching a given predicate
 List_find() {
-  local index=0
-  local node="$head_"
+  "$local" index=0
+  "$local" node="$head_"
   while [ "$index" -lt "$length_" ]; do
-    local node_value="$("$node"_value; printf x)"
+    "$local" node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
       printf %s "$node_value"
@@ -273,13 +272,13 @@ List_find() {
 }
 
 List_filter() {
-  local new_list="$1"
+  "$local" new_list="$1"
   shift
   List "$new_list"
-  local index=0
-  local node="$head_"
+  "$local" index=0
+  "$local" node="$head_"
   while [ "$index" -lt "$length_" ]; do
-    local node_value="$("$node"_value; printf x)"
+    "$local" node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
       "$new_list"_append "$node_value"
@@ -290,8 +289,8 @@ List_filter() {
 }
 
 List_foreach() {
-  local index=0
-  local node="$head_"
+  "$local" index=0
+  "$local" node="$head_"
   while [ "$index" -lt "$length_" ]; do
     "$@" "$("$node"_value)"
     node="$("$node"_next)"
