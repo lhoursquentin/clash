@@ -242,6 +242,7 @@ List_print() {
       local OLD_PATH="$PATH"
       PATH=
       if ! PATH="$OLD_PATH" "$1"_print 2> /dev/null; then
+        PATH="$OLD_PATH"
         printf '%s' "$1"
       fi
       PATH="$OLD_PATH"
@@ -271,7 +272,6 @@ List_find() {
   return 1
 }
 
-# Find a value matching a given predicate
 List_filter() {
   local new_list="$1"
   shift
