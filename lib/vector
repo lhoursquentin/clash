@@ -17,11 +17,11 @@ class Vector     \
   _get           \
   _index         \
   _insert        \
-  _new_node_     \
   _pop           \
   _pretty_print  \
   _remove        \
   _set           \
+  _new_node_     \
   _shift_left_   \
   _shift_right_  \
 
@@ -91,12 +91,6 @@ Vector_insert() {
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
 
-Vector_new_node_() {
-  "$local" node_name="$self"_Vector_node_"$length_"
-  Vector_node "$node_name" "$1"
-  "$self"_length__is "$((length_ + 1))"
-}
-
 Vector_pop() {
   set -- "${1-0}"
   check_index_within_range "$1" "$length_" || return
@@ -139,6 +133,12 @@ Vector_set() {
     "$local" target_index="$1"
   fi
   "$self"_Vector_node_"$target_index"_value_is "$2"
+}
+
+Vector_new_node_() {
+  "$local" node_name="$self"_Vector_node_"$length_"
+  Vector_node "$node_name" "$1"
+  "$self"_length__is "$((length_ + 1))"
 }
 
 Vector_shift_left_() {

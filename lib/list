@@ -20,7 +20,6 @@ class List       \
   length_        \
   tail_          \
   _append        \
-  _append_node_  \
   _clear         \
   _filter        \
   _find          \
@@ -33,6 +32,7 @@ class List       \
   _print         \
   _remove        \
   _set           \
+  _append_node_  \
 
 check_index_within_range() {
   # 1 -> index
@@ -53,17 +53,6 @@ List_append() {
     List_node "$node_id" "$value"
     "$self"_append_node_ "$node_id"
   done
-}
-
-List_append_node_() {
-  "$1"_previous_is "$tail_"
-  if [ "$length_" -eq 0 ]; then
-    "$self"_head__is "$1"
-  else
-    "$tail_"_next_is "$1"
-  fi
-  "$self"_tail__is "$1"
-  "$self"_length__is "$((length_ + 1))"
 }
 
 List_clear() {
@@ -301,6 +290,17 @@ List_set() {
   done
 
   "$node"_value_is "$2"
+}
+
+List_append_node_() {
+  "$1"_previous_is "$tail_"
+  if [ "$length_" -eq 0 ]; then
+    "$self"_head__is "$1"
+  else
+    "$tail_"_next_is "$1"
+  fi
+  "$self"_tail__is "$1"
+  "$self"_length__is "$((length_ + 1))"
 }
 
 _List() {
