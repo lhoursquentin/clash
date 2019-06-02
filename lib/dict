@@ -89,7 +89,7 @@ Dict_set() {
   else
     local list_id="$(List_id)"
     List "$list_id" "$tuple_id"
-    List_Node "$node"_tuple_list "$list_id"
+    List_node "$node"_tuple_list "$list_id"
     "$hashes_"_append_node_ "$node"_tuple_list
   fi
 }

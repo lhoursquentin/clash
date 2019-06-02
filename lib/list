@@ -1,13 +1,16 @@
 #!/bin/sh
 
-if ! . ./clash 2> /dev/null; then
+if ! [ -f ./clash ]; then
   echo 'Could not locate clash'
   exit 1
 fi >&2
 
+. ./clash
+
 # TODO could save some iterations by making use of the double link properties
 
-class List_Node \
+# List_node is also used by dict
+class List_node \
   value         \
   next          \
   previous      \
@@ -17,6 +20,7 @@ class List       \
   length_        \
   tail_          \
   _append        \
+  _append_node_  \
   _clear         \
   _filter        \
   _find          \
@@ -29,7 +33,6 @@ class List       \
   _print         \
   _remove        \
   _set           \
-  _append_node_  \
 
 check_index_within_range() {
   # 1 -> index
@@ -43,6 +46,15 @@ check_index_within_range() {
   fi >&2
 }
 
+List_append() {
+  "$local" node_id
+  for value do
+    node_id="$(List_node_id)"
+    List_node "$node_id" "$value"
+    "$self"_append_node_ "$node_id"
+  done
+}
+
 List_append_node_() {
   "$1"_previous_is "$tail_"
   if [ "$length_" -eq 0 ]; then
@@ -54,28 +66,62 @@ List_append_node_() {
   "$self"_length__is "$((length_ + 1))"
 }
 
-List_append() {
-  "$local" node_id
-  for value do
-    node_id="$(List_Node_id)"
-    List_Node "$node_id" "$value"
-    "$self"_append_node_ "$node_id"
-  done
-}
-
-List_index() {
+List_clear() {
   index=0
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
-    if [ "$("$node"_value; printf x)" = "$1"x ]; then
-      printf %s "$index"
+    next="$("$node"_next)"
+    del "$node"
+    node="$next"
+    index="$((index + 1))"
+  done
+  "$self"_head__is ''
+  "$self"_tail__is ''
+  "$self"_length__is 0
+}
+
+List_filter() {
+  "$local" new_list="$1"
+  shift
+  List "$new_list"
+  "$local" index=0
+  "$local" node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    "$local" node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
+      "$new_list"_append "$node_value"
+    fi
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+}
+
+# Find a value matching a given predicate
+List_find() {
+  "$local" index=0
+  "$local" node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    "$local" node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
+      printf %s "$node_value"
       return 0
     fi
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  printf 'Value not found: %s\n' "$1" >&2
   return 1
+}
+
+List_foreach() {
+  "$local" index=0
+  "$local" node="$head_"
+  while [ "$index" -lt "$length_" ]; do
+    "$@" "$("$node"_value)"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
 }
 
 List_get() {
@@ -98,47 +144,47 @@ List_get() {
   printf %s "$value"
 }
 
-List_pretty_print() {
-  printf '== %s == (length: %s, head: %s, tail: %s)
-' "$self" "$length_" "$([ -n "$head_" ] && "$head_"_value)" \
-                     "$([ -n "$tail_" ] && "$tail_"_value)"
-  index=0
-  node="$head_"
-  while [ "$index" -lt "$length_" ]; do
-    value="$("$node"_value; printf x)"
-    value="${value%x}"
-    printf '%s: %s (%s)\n' "$index" "$value" "$node"
-    node="$("$node"_next)"
-    index="$((index + 1))"
-  done
-}
-
-List_remove() {
+List_index() {
   index=0
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
     if [ "$("$node"_value; printf x)" = "$1"x ]; then
-      next_node="$("$node"_next)"
-      if [ "$node" = "$tail_" ]; then
-        "$self"_tail__is "$prev_node"
-        "$prev_node"_next_is ''
-      elif [ "$node" = "$head_" ]; then
-        "$self"_head__is "$next_node"
-        "$next_node"_previous_is ''
-      else
-        "$prev_node"_next_is "$next_node"
-        "$next_node"_previous_is "$prev_node"
-      fi
-      del "$node"
-      "$self"_length__is "$((length_ - 1))"
-      return
+      printf %s "$index"
+      return 0
     fi
-    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
   printf 'Value not found: %s\n' "$1" >&2
   return 1
+}
+
+List_insert() {
+  check_index_within_range "$1" "$((length_ + 1))" || return
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  index=0
+  node="$head_"
+  prev_node=
+  while [ "$index" -lt "$target_index" ]; do
+    prev_node="$node"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  "$local" node_id="$(List_node_id)"
+  List_node "$node_id" "$2" "$node" "$prev_node"
+  if [ -n "$prev_node" ]; then
+    "$prev_node"_next_is "$node_id"
+  fi
+  if [ "$prev_node" = "$tail_" ]; then
+    "$self"_tail__is "$node_id"
+  elif [ "$node" = "$head_" ]; then
+    "$self"_head__is "$node_id"
+  fi
+  "$self"_length__is "$((length_ + 1))"
 }
 
 List_pop() {
@@ -177,64 +223,19 @@ List_pop() {
   printf %s "$value"
 }
 
-List_clear() {
+List_pretty_print() {
+  printf '== %s == (length: %s, head: %s, tail: %s)
+' "$self" "$length_" "$([ -n "$head_" ] && "$head_"_value)" \
+                     "$([ -n "$tail_" ] && "$tail_"_value)"
   index=0
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
-    next="$("$node"_next)"
-    del "$node"
-    node="$next"
-    index="$((index + 1))"
-  done
-  "$self"_head__is ''
-  "$self"_tail__is ''
-  "$self"_length__is 0
-}
-
-List_insert() {
-  check_index_within_range "$1" "$((length_ + 1))" || return
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
-  index=0
-  node="$head_"
-  prev_node=
-  while [ "$index" -lt "$target_index" ]; do
-    prev_node="$node"
+    value="$("$node"_value; printf x)"
+    value="${value%x}"
+    printf '%s: %s (%s)\n' "$index" "$value" "$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  "$local" node_id="$(List_Node_id)"
-  List_Node "$node_id" "$2" "$node" "$prev_node"
-  if [ -n "$prev_node" ]; then
-    "$prev_node"_next_is "$node_id"
-  fi
-  if [ "$prev_node" = "$tail_" ]; then
-    "$self"_tail__is "$node_id"
-  elif [ "$node" = "$head_" ]; then
-    "$self"_head__is "$node_id"
-  fi
-  "$self"_length__is "$((length_ + 1))"
-}
-
-List_set() {
-  check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
-  index=0
-  node="$head_"
-  while [ "$index" -lt "$target_index" ]; do
-    node="$("$node"_next)"
-    index="$((index + 1))"
-  done
-
-  "$node"_value_is "$2"
 }
 
 List_print() {
@@ -256,48 +257,50 @@ List_print() {
   echo
 }
 
-# Find a value matching a given predicate
-List_find() {
-  "$local" index=0
-  "$local" node="$head_"
+List_remove() {
+  index=0
+  node="$head_"
   while [ "$index" -lt "$length_" ]; do
-    "$local" node_value="$("$node"_value; printf x)"
-    node_value="${node_value%x}"
-    if "$@" "$node_value"; then
-      printf %s "$node_value"
-      return 0
+    if [ "$("$node"_value; printf x)" = "$1"x ]; then
+      next_node="$("$node"_next)"
+      if [ "$node" = "$tail_" ]; then
+        "$self"_tail__is "$prev_node"
+        "$prev_node"_next_is ''
+      elif [ "$node" = "$head_" ]; then
+        "$self"_head__is "$next_node"
+        "$next_node"_previous_is ''
+      else
+        "$prev_node"_next_is "$next_node"
+        "$next_node"_previous_is "$prev_node"
+      fi
+      del "$node"
+      "$self"_length__is "$((length_ - 1))"
+      return
     fi
+    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
+  printf 'Value not found: %s\n' "$1" >&2
   return 1
 }
 
-List_filter() {
-  "$local" new_list="$1"
-  shift
-  List "$new_list"
-  "$local" index=0
-  "$local" node="$head_"
-  while [ "$index" -lt "$length_" ]; do
-    "$local" node_value="$("$node"_value; printf x)"
-    node_value="${node_value%x}"
-    if "$@" "$node_value"; then
-      "$new_list"_append "$node_value"
-    fi
-    node="$("$node"_next)"
-    index="$((index + 1))"
-  done
-}
+List_set() {
+  check_index_within_range "$1" "$length_" || return
 
-List_foreach() {
-  "$local" index=0
-  "$local" node="$head_"
-  while [ "$index" -lt "$length_" ]; do
-    "$@" "$("$node"_value)"
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  index=0
+  node="$head_"
+  while [ "$index" -lt "$target_index" ]; do
     node="$("$node"_next)"
     index="$((index + 1))"
   done
+
+  "$node"_value_is "$2"
 }
 
 _List() {
