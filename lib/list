@@ -55,9 +55,11 @@ List_append_node_() {
 }
 
 List_append() {
+  "$local" node_id
   for value do
-    List_Node _ "$value"
-    "$self"_append_node_ "$List_Node_generated_name"
+    node_id="$(List_Node_id)"
+    List_Node "$node_id" "$value"
+    "$self"_append_node_ "$node_id"
   done
 }
 
@@ -204,15 +206,15 @@ List_insert() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  List_Node _ "$2" "$node" "$prev_node"
-  "$local" List_Node_generated_name="$List_Node_generated_name"
+  "$local" node_id="$(List_Node_id)"
+  List_Node "$node_id" "$2" "$node" "$prev_node"
   if [ -n "$prev_node" ]; then
-    "$prev_node"_next_is "$List_Node_generated_name"
+    "$prev_node"_next_is "$node_id"
   fi
   if [ "$prev_node" = "$tail_" ]; then
-    "$self"_tail__is "$List_Node_generated_name"
+    "$self"_tail__is "$node_id"
   elif [ "$node" = "$head_" ]; then
-    "$self"_head__is "$List_Node_generated_name"
+    "$self"_head__is "$node_id"
   fi
   "$self"_length__is "$((length_ + 1))"
 }

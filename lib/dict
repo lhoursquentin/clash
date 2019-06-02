@@ -82,20 +82,20 @@ Dict_pretty_print() {
 Dict_set() {
   local hash_value="$("$self"_hash_ "$1")"
   local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
-  local Dict_Tuple_generated_name
-  Dict_Tuple _ "$1" "$2"
+  local tuple_id="$(Dict_Tuple_id)"
+  Dict_Tuple "$tuple_id" "$1" "$2"
   if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
-    "$tuple_list"_append "$Dict_Tuple_generated_name"
+    "$tuple_list"_append "$tuple_id"
   else
-    local List_generated_name
-    List _ "$Dict_Tuple_generated_name"
-    List_Node "$node"_tuple_list "$List_generated_name"
+    local list_id="$(List_id)"
+    List "$list_id" "$tuple_id"
+    List_Node "$node"_tuple_list "$list_id"
     "$hashes_"_append_node_ "$node"_tuple_list
   fi
 }
 
 _Dict() {
-  local List_generated_name
-  List _
-  "$self"_hashes__is "$List_generated_name"
+  local list_id="$(List_id)"
+  List "$list_id"
+  "$self"_hashes__is "$list_id"
 }

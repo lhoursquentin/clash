@@ -26,7 +26,7 @@ quote() {
     esac
     output="$output$transformed_char"
   done
-  printf '%s' "$output"
+  printf %s "$output"
 }
 
 del() {
@@ -42,13 +42,12 @@ class(){
   "$local" delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {
         unset -f delete_'"'"'"$1"'"'"''
   "$local" class_body='
+    '"$func_prefix$name"'_id'"$func_suffix"' {
+      printf %s _'"$name"'_anonymous_id_"${_'"$name"'_anonymous_id_count-0}"
+    }
+
     '"$func_prefix$name$func_suffix"' {
-       if [ "$1" = _ ]; then
-         shift
-         _'"$name"'_anonymous_id_count="$((_'"$name"'_anonymous_id_count + 1))"
-         '"$name"'_generated_name=_'"$name"'_anonymous_id_"$_'"$name"'_anonymous_id_count"
-         set -- "$'"$name"'_generated_name" "$@"
-       fi'
+      _'"$name"'_anonymous_id_count="$((_'"$name"'_anonymous_id_count + 1))"'
   "$local" attr_index=1
   set -- 'name' "$@"
   "$local" nb_args="$#"
