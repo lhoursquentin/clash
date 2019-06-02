@@ -9,8 +9,11 @@ fi >&2
 . ./lib/list
 
 dummy_hash() {
-  str="$1"
-  hash_value=0
+  "$local" str="$1"
+  "$local" hash_value=0
+  "$local" tmp
+  "$local" char
+  "$local" char_num
   while [ -n "$str" ]; do
     tmp="$str"
     str="${str#?}"
@@ -51,8 +54,9 @@ class Dict       \
   _values        \
 
 Dict_get() {
-  local hash_value="$("$hash_function" "$1")"
-  local tuple
+  "$local" hash_value="$("$hash_function" "$1")"
+  "$local" tuple
+  "$local" tuple_list
   if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
     tuple="$(
       matching_tuple() {
@@ -61,7 +65,7 @@ Dict_get() {
       "$tuple_list"_find matching_tuple "$1"
     )"
   then
-    local value="$("$tuple"_value; printf x)"
+    "$local" value="$("$tuple"_value; printf x)"
     printf %s "${value%x}"
   else
     printf 'Key not found: %s\n' "$1" >&2
@@ -81,14 +85,14 @@ Dict_pretty_print() {
 }
 
 Dict_set() {
-  local hash_value="$("$hash_function" "$1")"
-  local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
-  local tuple_id="$(Dict_tuple_id)"
+  "$local" hash_value="$("$hash_function" "$1")"
+  "$local" node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
+  "$local" tuple_id="$(Dict_tuple_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
   if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
     "$tuple_list"_append "$tuple_id"
   else
-    local list_id="$(List_id)"
+    "$local" list_id="$(List_id)"
     List "$list_id" "$tuple_id"
     List_node "$node"_tuple_list "$list_id"
     "$buckets_"_append_node_ "$node"_tuple_list
@@ -96,7 +100,7 @@ Dict_set() {
 }
 
 _Dict() {
-  local list_id="$(List_id)"
+  "$local" list_id="$(List_id)"
   List "$list_id"
   "$self"_buckets__is "$list_id"
   "$self"_hash_function_is dummy_hash
