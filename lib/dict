@@ -21,12 +21,12 @@ dummy_hash() {
   printf '%s\n' "$((hash_value % 8))"
 }
 
-class Dict_Tuple \
+class Dict_tuple \
   key            \
   value          \
   _print         \
 
-Dict_Tuple_print() {
+Dict_tuple_print() {
   printf '('
   if ! "$key"_print 2> /dev/null; then
     printf '%s' "$key"
@@ -83,8 +83,8 @@ Dict_pretty_print() {
 Dict_set() {
   local hash_value="$("$hash_function" "$1")"
   local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
-  local tuple_id="$(Dict_Tuple_id)"
-  Dict_Tuple "$tuple_id" "$1" "$2"
+  local tuple_id="$(Dict_tuple_id)"
+  Dict_tuple "$tuple_id" "$1" "$2"
   if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
     "$tuple_list"_append "$tuple_id"
   else
