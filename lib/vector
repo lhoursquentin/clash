@@ -41,6 +41,14 @@ check_index_within_range() {
   fi >&2
 }
 
+get_positive_index() {
+  if [ "$1" -lt 0 ]; then
+    printf %s "$((length_ + $1))"
+  else
+    printf %s "${1#-}" # remove - sign from -0
+  fi
+}
+
 Vector_append() {
   "$local" value
   for value do
@@ -102,12 +110,7 @@ Vector_foreach() {
 
 Vector_get() {
   check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    "$local" target_index="$((length_ + $1))"
-  else
-    "$local" target_index="$(($1))"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
   "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   value="${value%x}"
   printf %s "$value"
@@ -129,11 +132,8 @@ Vector_index() {
 
 Vector_insert() {
   check_index_within_range "$1" "$((length_ + 1))" || return
-  if [ "$1" -lt 0 ]; then
-    "$local" target_index="$((length_ + $1))"
-  else
-    "$local" target_index="$(($1))"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
+  "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   "$self"_shift_right_ "$target_index"
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
@@ -141,13 +141,8 @@ Vector_insert() {
 Vector_pop() {
   set -- "${1-0}"
   check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    "$local" target_index="$((length_ + $1))"
-  else
-    "$local" target_index="$(($1))"
-  fi
-
+  "$local" target_index="$(get_positive_index "$1")"
+  "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   value="${value%x}"
   "$self"_shift_left_ "$target_index"
@@ -192,12 +187,8 @@ Vector_remove() {
 
 Vector_set() {
   check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    "$local" target_index="$((length_ + $1))"
-  else
-    "$local" target_index="$(($1))"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
+  "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
 

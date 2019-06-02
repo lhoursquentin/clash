@@ -46,6 +46,14 @@ check_index_within_range() {
   fi >&2
 }
 
+get_positive_index() {
+  if [ "$1" -lt 0 ]; then
+    printf %s "$((length_ + $1))"
+  else
+    printf %s "${1#-}" # remove - sign from -0
+  fi
+}
+
 List_append() {
   "$local" node_id
   for value do
@@ -120,12 +128,7 @@ List_foreach() {
 
 List_get() {
   check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do
@@ -155,11 +158,7 @@ List_index() {
 
 List_insert() {
   check_index_within_range "$1" "$((length_ + 1))" || return
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   prev_node=
@@ -184,12 +183,7 @@ List_insert() {
 List_pop() {
   set -- "${1-0}"
   check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do
@@ -281,12 +275,7 @@ List_remove() {
 
 List_set() {
   check_index_within_range "$1" "$length_" || return
-
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
+  "$local" target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do
