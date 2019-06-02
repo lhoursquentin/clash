@@ -14,11 +14,15 @@ class Vector     \
   length_        \
   _append        \
   _clear         \
+  _filter        \
+  _find          \
+  _foreach       \
   _get           \
   _index         \
   _insert        \
   _pop           \
   _pretty_print  \
+  _print         \
   _remove        \
   _set           \
   _new_node_     \
@@ -53,13 +57,56 @@ Vector_clear() {
   "$self"_length__is 0
 }
 
+Vector_filter() {
+  "$local" new_vector="$1"
+  shift
+  Vector "$new_vector"
+  "$local" index=0
+  "$local" node_value
+  while [ "$index" -lt "$length_" ]; do
+    node_value="$("$self"_Vector_node_"$index"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
+      "$new_vector"_append "$node_value"
+    fi
+    index="$((index + 1))"
+  done
+}
+
+# Find a value matching a given predicate
+Vector_find() {
+  "$local" index=0
+  "$local" node_value
+  while [ "$index" -lt "$length_" ]; do
+    node_value="$("$self"_Vector_node_"$index"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
+      printf %s "$node_value"
+      return 0
+    fi
+    index="$((index + 1))"
+  done
+  return 1
+}
+
+Vector_foreach() {
+  "$local" index=0
+  "$local" node_value
+  while [ "$index" -lt "$length_" ]; do
+    node_value="$("$self"_Vector_node_"$index"_value; printf x)"
+    node_value="${node_value%x}"
+    "$@" "$node_value"
+    index="$((index + 1))"
+  done
+}
+
 Vector_get() {
   check_index_within_range "$1" "$length_" || return
 
   if [ "$1" -lt 0 ]; then
     "$local" target_index="$((length_ + $1))"
   else
-    "$local" target_index="$1"
+    "$local" target_index="$(($1))"
   fi
   "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   value="${value%x}"
@@ -85,7 +132,7 @@ Vector_insert() {
   if [ "$1" -lt 0 ]; then
     "$local" target_index="$((length_ + $1))"
   else
-    "$local" target_index="$1"
+    "$local" target_index="$(($1))"
   fi
   "$self"_shift_right_ "$target_index"
   "$self"_Vector_node_"$target_index"_value_is "$2"
@@ -98,7 +145,7 @@ Vector_pop() {
   if [ "$1" -lt 0 ]; then
     "$local" target_index="$((length_ + $1))"
   else
-    "$local" target_index="$1"
+    "$local" target_index="$(($1))"
   fi
 
   "$local" value="$("$self"_Vector_node_"$target_index"_value; printf x)"
@@ -119,6 +166,25 @@ Vector_pretty_print() {
   done
 }
 
+Vector_print() {
+  (
+    node_printer() {
+      "$local" OLD_PATH="$PATH"
+      PATH=
+      if ! PATH="$OLD_PATH" "$1"_print 2> /dev/null; then
+        PATH="$OLD_PATH"
+        printf '%s' "$1"
+      fi
+      PATH="$OLD_PATH"
+      "$local" tmp="${IFS#?}"
+      "$local" delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
+      printf %s "${delim:- }" # Use a space if IFS is unset
+    }
+    "$self"_foreach node_printer
+  )
+  echo
+}
+
 Vector_remove() {
   "$local" index="$("$self"_index "$1")" || return
   "$self"_shift_left_ "$index"
@@ -130,7 +196,7 @@ Vector_set() {
   if [ "$1" -lt 0 ]; then
     "$local" target_index="$((length_ + $1))"
   else
-    "$local" target_index="$1"
+    "$local" target_index="$(($1))"
   fi
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
