@@ -1,11 +1,25 @@
 #!/bin/sh
 
-if ! . ./clash 2> /dev/null; then
+if ! [ -f ./clash ]; then
   echo 'Could not locate clash'
   exit 1
 fi >&2
 
+. ./clash
 . ./lib/list
+
+dummy_hash() {
+  str="$1"
+  hash_value=0
+  while [ -n "$str" ]; do
+    tmp="$str"
+    str="${str#?}"
+    char="${tmp%$str}"
+    char_num="$(printf %d "'$char")"
+    hash_value="$((hash_value + char_num))"
+  done
+  printf '%s\n' "$((hash_value % 8))"
+}
 
 class Dict_Tuple \
   key            \
@@ -25,7 +39,8 @@ Dict_Tuple_print() {
 }
 
 class Dict       \
-  hashes_        \
+  hash_function  \
+  buckets_       \
   _clear         \
   _get           \
   _keys          \
@@ -34,23 +49,9 @@ class Dict       \
   _pretty_print  \
   _set           \
   _values        \
-  _hash_         \
-
-Dict_hash_() {
-  str="$1"
-  hash_value=0
-  while [ -n "$str" ]; do
-    tmp="$str"
-    str="${str#?}"
-    char="${tmp%$str}"
-    char_num="$(printf %d "'$char")"
-    hash_value="$((hash_value + char_num))"
-  done
-  printf '%s\n' "$((hash_value % 8))"
-}
 
 Dict_get() {
-  local hash_value="$("$self"_hash_ "$1")"
+  local hash_value="$("$hash_function" "$1")"
   local tuple
   if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
     tuple="$(
@@ -68,19 +69,19 @@ Dict_get() {
 }
 
 Dict_pretty_print() {
-  printf '== %s == (nb hashes: %s)\n' "$self" "$("$hashes_"_length_)"
+  printf '== %s == (nb buckets: %s)\n' "$self" "$("$buckets_"_length_)"
 
   (
     tuple_printer() {
       printf '%s -> ' "$1"
       "$1"_print
     }
-    "$hashes_"_foreach tuple_printer
+    "$buckets_"_foreach tuple_printer
   )
 }
 
 Dict_set() {
-  local hash_value="$("$self"_hash_ "$1")"
+  local hash_value="$("$hash_function" "$1")"
   local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
   local tuple_id="$(Dict_Tuple_id)"
   Dict_Tuple "$tuple_id" "$1" "$2"
@@ -90,12 +91,13 @@ Dict_set() {
     local list_id="$(List_id)"
     List "$list_id" "$tuple_id"
     List_node "$node"_tuple_list "$list_id"
-    "$hashes_"_append_node_ "$node"_tuple_list
+    "$buckets_"_append_node_ "$node"_tuple_list
   fi
 }
 
 _Dict() {
   local list_id="$(List_id)"
   List "$list_id"
-  "$self"_hashes__is "$list_id"
+  "$self"_buckets__is "$list_id"
+  "$self"_hash_function_is dummy_hash
 }
