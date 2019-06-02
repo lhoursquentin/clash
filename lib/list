@@ -75,8 +75,9 @@ List_filter() {
   List "$new_list"
   "$local" index=0
   "$local" node="$head_"
+  "$local" node_value
   while [ "$index" -lt "$length_" ]; do
-    "$local" node_value="$("$node"_value; printf x)"
+    node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
       "$new_list"_append "$node_value"
@@ -90,8 +91,9 @@ List_filter() {
 List_find() {
   "$local" index=0
   "$local" node="$head_"
+  "$local" node_value
   while [ "$index" -lt "$length_" ]; do
-    "$local" node_value="$("$node"_value; printf x)"
+    node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
       printf %s "$node_value"
@@ -106,8 +108,11 @@ List_find() {
 List_foreach() {
   "$local" index=0
   "$local" node="$head_"
+  "$local" node_value
   while [ "$index" -lt "$length_" ]; do
-    "$@" "$("$node"_value)"
+    node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    "$@" "$node_value"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
