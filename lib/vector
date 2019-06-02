@@ -207,7 +207,7 @@ Vector_shift_left_() {
     index="$((index + 1))"
   done
   "$self"_length__is "$((length_ - 1))"
-  del "$self"_Vector_node_"$length_"
+  del "$self"_Vector_node_"$("$self"_length_)"
 }
 
 Vector_shift_right_() {
