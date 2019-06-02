@@ -1,9 +1,11 @@
 #!/bin/sh
 
-if ! . ./clash 2> /dev/null; then
+if ! [ -f ./clash ]; then
   echo 'Could not locate clash'
   exit 1
 fi >&2
+
+. ./clash
 
 class Vector_Node \
   value           \
@@ -15,11 +17,11 @@ class Vector     \
   _get           \
   _index         \
   _insert        \
+  _new_node_     \
   _pop           \
   _pretty_print  \
   _remove        \
   _set           \
-  _new_node_     \
   _shift_left_   \
   _shift_right_  \
 
@@ -35,10 +37,111 @@ check_index_within_range() {
   fi >&2
 }
 
+Vector_append() {
+  for value do
+    "$self"_new_node_ "$value"
+  done
+}
+
+Vector_clear() {
+  index=0
+  while [ "$index" -lt "$length_" ]; do
+    del "$self"_Vector_Node_"$index"
+    index="$((index + 1))"
+  done
+  "$self"_length__is 0
+}
+
+Vector_get() {
+  check_index_within_range "$1" "$length_" || return
+
+  local target_index
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  local value
+  value="$("$self"_Vector_Node_"$target_index"_value; printf x)"
+  value="${value%x}"
+  printf %s "$value"
+}
+
+Vector_index() {
+  index=0
+  local value
+  while [ "$index" -lt "$length_" ]; do
+    if [ "$("$self"_Vector_Node_"$index"_value; printf x)" = "$1"x ]; then
+      printf %s "$index"
+      return 0
+    fi
+    index="$((index + 1))"
+  done
+  printf 'Value not found: %s\n' "$1" >&2
+  return 1
+}
+
+Vector_insert() {
+  check_index_within_range "$1" "$((length_ + 1))" || return
+  local target_index
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  "$self"_shift_right_ "$target_index"
+  "$self"_Vector_Node_"$target_index"_value_is "$2"
+}
+
 Vector_new_node_() {
   local node_name="$self"_Vector_Node_"$length_"
   Vector_Node "$node_name" "$1"
   "$self"_length__is "$((length_ + 1))"
+}
+
+Vector_pop() {
+  set -- "${1-0}"
+  check_index_within_range "$1" "$length_" || return
+
+  local target_index
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+
+  value="$("$self"_Vector_Node_"$target_index"_value; printf x)"
+  value="${value%x}"
+  "$self"_shift_left_ "$target_index"
+  printf %s "$value"
+}
+
+Vector_pretty_print() {
+  printf '== %s == (length: %s)\n' "$self" "$length_"
+  index=0
+  while [ "$index" -lt "$length_" ]; do
+    value="$("$self"_Vector_Node_"$index"_value; printf x)"
+    value="${value%x}"
+    printf '%s: %s\n' "$index" "$value"
+    index="$((index + 1))"
+  done
+}
+
+Vector_remove() {
+  index="$("$self"_index "$1")" || return
+  "$self"_shift_left_ "$index"
+}
+
+Vector_set() {
+  check_index_within_range "$1" "$length_" || return
+
+  local target_index
+  if [ "$1" -lt 0 ]; then
+    target_index="$((length_ + $1))"
+  else
+    target_index="$1"
+  fi
+  "$self"_Vector_Node_"$target_index"_value_is "$2"
 }
 
 Vector_shift_left_() {
@@ -63,107 +166,6 @@ Vector_shift_right_() {
     index="$((index - 1))"
   done
   "$self"_length__is "$((length_ + 1))"
-}
-
-Vector_append() {
-  for value do
-    "$self"_new_node_ "$value"
-  done
-}
-
-Vector_index() {
-  index=0
-  local value
-  while [ "$index" -lt "$length_" ]; do
-    if [ "$("$self"_Vector_Node_"$index"_value; printf x)" = "$1"x ]; then
-      printf '%s\n' "$index"
-      return 0
-    fi
-    index="$((index + 1))"
-  done
-  printf 'Value not found: %s\n' "$1" >&2
-  return 1
-}
-
-Vector_get() {
-  check_index_within_range "$1" "$length_" || return
-
-  local target_index
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
-  local value
-  value="$("$self"_Vector_Node_"$target_index"_value; printf x)"
-  value="${value%x}"
-  printf %s "$value"
-}
-
-Vector_pretty_print() {
-  printf '== %s == (length: %s)\n' "$self" "$length_"
-  index=0
-  while [ "$index" -lt "$length_" ]; do
-    value="$("$self"_Vector_Node_"$index"_value; printf x)"
-    value="${value%x}"
-    printf '%s: %s\n' "$index" "$value"
-    index="$((index + 1))"
-  done
-}
-
-Vector_remove() {
-  index="$("$self"_index "$1")" || return
-  "$self"_shift_left_ "$index"
-}
-
-Vector_pop() {
-  set -- "${1-0}"
-  check_index_within_range "$1" "$length_" || return
-
-  local target_index
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
-
-  value="$("$self"_Vector_Node_"$target_index"_value; printf x)"
-  value="${value%x}"
-  "$self"_shift_left_ "$target_index"
-  printf %s "$value"
-}
-
-Vector_clear() {
-  index=0
-  while [ "$index" -lt "$length_" ]; do
-    del "$self"_Vector_Node_"$index"
-    index="$((index + 1))"
-  done
-  "$self"_length__is 0
-}
-
-Vector_insert() {
-  check_index_within_range "$1" "$((length_ + 1))" || return
-  local target_index
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
-  "$self"_shift_right_ "$target_index"
-  "$self"_Vector_Node_"$target_index"_value_is "$2"
-}
-
-Vector_set() {
-  check_index_within_range "$1" "$length_" || return
-
-  local target_index
-  if [ "$1" -lt 0 ]; then
-    target_index="$((length_ + $1))"
-  else
-    target_index="$1"
-  fi
-  "$self"_Vector_Node_"$target_index"_value_is "$2"
 }
 
 _Vector() {
