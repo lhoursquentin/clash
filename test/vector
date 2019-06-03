@@ -156,8 +156,30 @@ assert_out filtered_vector_length_ -- 3
 assert_true myvector_filter filtered_vector_no_match false -- 'Failed to filter'
 assert_out filtered_vector_no_match_length_ -- 0
 
+first_letter() {
+  tmp="${1#?}"
+  printf %s "${1%$tmp}"
+}
+# Try building a vector with the first letter of each node value
+assert_true myvector_map mapped_vector first_letter -- 'Failed to map'
+assert_out mapped_vector_length_ -- "$(myvector_length_)"
+assert_out mapped_vector_print -- 'd f m f f 
+'
+
+# Print values with reduce
+assert_out myvector_reduce printf '%s -> %s' -- 'def -> foo -> mno -> funk -> folk'
+
+# Check is_empty returns false
+assert_false myvector_is_empty -- 'is_empty should return non-zero'
+
 assert_true myvector_clear -- 'Failed to clear'
 assert_out myvector_length_ -- 0
+
+# Check is_empty returns true after clear
+assert_true myvector_is_empty -- 'is_empty should return zero'
+
+# Check reduce fails on an empty collection
+assert_false myvector_reduce true -- 'Reduce should fail on empty collections'
 
 # Check deletion
 assert_true del myvector -- 'Failed to delete vector'
