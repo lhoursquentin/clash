@@ -253,7 +253,7 @@ Vector_shift_left_() {
 }
 
 Vector_shift_right_() {
-  "$local" index="$(($length_ - 1))"
+  "$local" index="$((length_ - 1))"
   "$local" target_index="$1"
   "$local" value
   "$self"_append ''
@@ -262,7 +262,6 @@ Vector_shift_right_() {
     "$self"_Vector_node_"$((index + 1))"_value_is "${value%x}"
     index="$((index - 1))"
   done
-  "$self"_length__is "$((length_ + 1))"
 }
 
 _Vector() {
