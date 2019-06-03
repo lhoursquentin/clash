@@ -27,9 +27,12 @@ class List       \
   _get           \
   _index         \
   _insert        \
+  _is_empty      \
+  _map           \
   _pop           \
   _pretty_print  \
   _print         \
+  _reduce        \
   _remove        \
   _set           \
   _append_node_  \
@@ -180,6 +183,29 @@ List_insert() {
   "$self"_length__is "$((length_ + 1))"
 }
 
+List_is_empty() {
+  [ "$length_" -eq 0 ]
+}
+
+List_map() {
+  "$local" new_list="$1"
+  shift
+  List "$new_list"
+  "$local" index=0
+  "$local" node="$head_"
+  "$local" node_value
+  "$local" new_value
+  while [ "$index" -lt "$length_" ]; do
+    node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    new_value="$("$@" "$node_value"; printf x)"
+    new_value="${new_value%x}"
+    "$new_list"_append "$new_value"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+}
+
 List_pop() {
   set -- "${1-0}"
   check_index_within_range "$1" "$length_" || return
@@ -243,6 +269,27 @@ List_print() {
     "$self"_foreach node_printer
   )
   echo
+}
+
+List_reduce() {
+  if "$self"_is_empty; then
+    printf '%s is empty, nothing to reduce\n' "$self"
+    return 1
+  fi >&2
+
+  "$local" node_value="$("$head_"_value; printf x)"
+  "$local" accumulated_value="${node_value%x}"
+  "$local" node="$("$head_"_next)"
+  "$local" index=1
+  while [ "$index" -lt "$length_" ]; do
+    node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    accumulated_value="$("$@" "$accumulated_value" "$node_value"; printf x)"
+    accumulated_value="${accumulated_value%x}"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  printf %s "$accumulated_value"
 }
 
 List_remove() {

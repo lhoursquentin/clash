@@ -186,6 +186,22 @@ assert_out filtered_list_length_ -- 3
 assert_true mylist_filter filtered_list_no_match false -- 'Failed to filter'
 assert_out filtered_list_no_match_length_ -- 0
 
+first_letter() {
+  tmp="${1#?}"
+  printf %s "${1%$tmp}"
+}
+# Try building a list with the first letter of each node value
+assert_true mylist_map mapped_list first_letter -- 'Failed to map'
+assert_out mapped_list_length_ -- "$(mylist_length_)"
+assert_out mapped_list_print -- 'd f m f f 
+'
+
+# Print values with reduce
+assert_out mylist_reduce printf '%s -> %s' -- 'def -> foo -> mno -> funk -> folk'
+
+# Check is_empty returns false
+assert_false mylist_is_empty -- 'is_empty should return non-zero'
+
 # Check clear resets head/tail + length == 0
 first_node="$(mylist_head_)"
 last_node="$(mylist_tail_)"
@@ -197,6 +213,12 @@ assert_out mylist_tail_ -- ''
 # Nodes should have been deleted by the clear call
 assert_false "$first_node"_value -- 'Failed to clean nodes'
 assert_false "$last_node"_value -- 'Failed to clean nodes'
+
+# Check is_empty returns true after clear
+assert_true mylist_is_empty -- 'is_empty should return zero'
+
+# Check reduce fails on an empty collection
+assert_false mylist_reduce true -- 'Reduce should fail on empty collections'
 
 # Check deletion
 assert_true del mylist -- 'Failed to delete list'
