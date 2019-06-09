@@ -73,9 +73,9 @@ class(){
             constructor_attr_defs="$constructor_attr_defs"'
       '"$local"' '"$1"'="$'"$attr_index"'"'
             attr_methods_defs="$attr_methods_defs"'
+      '"$local"' _tmp_getter="$(quote "$'"$attr_index"'"; printf x)"
       eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {
-        '"$local"' _tmp_getter='"'"'"'"'"'"''"$(quote "$'"$attr_index"'"; printf x)"''"'"'"'"'"'"'
-        printf %s "${_tmp_getter%x}"
+        printf %s '"'"'"'"'"'""${_tmp_getter%x}""'"'"'"'"'"'
       }'"'"
             ;;
         esac
@@ -87,9 +87,9 @@ class(){
         if [ "$self" = '"'"'"$1"'"'"' ]; then
           '"$1"'="$1"
         fi
+        '"$local"' _tmp_getter="$(quote "$1"; printf x)"
         eval '"$func_prefix"''"'"'"$1"'"'_$1'"'"'"'"'"'"'"''"$func_suffix"' {
-          '"$local"' _tmp_getter='"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$(quote "''$1''"; printf x)"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
-          printf %s "${_tmp_getter%x}"
+          printf %s '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"${_tmp_getter%x}"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
         }'"'"'"'"'"'"'"'"'
       }'"'"
         fi
