@@ -1,0 +1,240 @@
+#!/bin/sh
+
+if ! [ -f ./lib/list ]; then
+  echo 'Could not locate clash'
+  exit 1
+fi >&2
+
+. ./lib/list
+
+class Test              \
+  checker_list_         \
+  checkers_report_file_ \
+  cmd_list_             \
+  description_          \
+  err_equal_            \
+  err_file_             \
+  err_not_equal_        \
+  err_not_regex_        \
+  err_regex_            \
+  out_equal_            \
+  out_file_             \
+  out_not_equal_        \
+  out_not_regex_        \
+  out_regex_            \
+  ret_equal_            \
+  ret_not_equal_        \
+  ret_val_              \
+  _err_equal            \
+  _err_not_equal        \
+  _err_not_regex        \
+  _err_regex            \
+  _out_equal            \
+  _out_not_equal        \
+  _out_not_regex        \
+  _out_regex            \
+  _ret_equal            \
+  _ret_not_equal        \
+  _run                  \
+
+Test_err_equal() {
+  "$checker_list_"_append err_equal_
+  "$self"_err_equal__is "$1"
+}
+
+Test_err_not_equal() {
+  "$checker_list_"_append err_not_equal_
+  "$self"_err_not_equal__is "$1"
+}
+
+Test_err_not_regex() {
+  "$checker_list_"_append err_not_regex_
+  "$self"_err_not_regex__is "$1"
+}
+
+Test_err_regex() {
+  "$checker_list_"_append err_regex_
+  "$self"_err_regex__is "$1"
+}
+
+Test_out_equal() {
+  "$checker_list_"_append out_equal_
+  "$self"_out_equal__is "$1"
+}
+
+Test_out_not_equal() {
+  "$checker_list_"_append out_not_equal_
+  "$self"_out_not_equal__is "$1"
+}
+
+Test_out_not_regex() {
+  "$checker_list_"_append out_not_regex_
+  "$self"_out_not_regex__is "$1"
+}
+
+Test_out_regex() {
+  "$checker_list_"_append out_regex_
+  "$self"_out_regex__is "$1"
+}
+
+Test_ret_equal() {
+  "$checker_list_"_append ret_equal_
+  "$self"_ret_equal__is "$1"
+}
+
+Test_ret_not_equal() {
+  "$checker_list_"_append ret_not_equal_
+  "$self"_ret_not_equal__is "$1"
+}
+
+_Test() {
+  shift # name
+  "$local" cmd_list_id="$(List_id)"
+  List "$cmd_list_id" "$@"
+  "$local" checker_list_id="$(List_id)"
+  List "$checker_list_id"
+  "$self"_checker_list__is "$checker_list_id"
+  "$self"_cmd_list__is "$cmd_list_id"
+  # FIXME mktemp is not POSIX, this restricts the portability of the testsuite
+  "$self"_checkers_report_file__is "$(mktemp)"
+  "$self"_err_file__is "$(mktemp)"
+  "$self"_out_file__is "$(mktemp)"
+}
+
+# FIXME this is dirty, could create a matcher class to break this down
+# return 0 if checker failed
+call_checker() {
+  printf '\e[0;34mVerification\e[0m - %s\n' "$1"
+  case "$1" in
+    err_equal_)
+      printf %s "$err_equal_" | diff - "$err_file_"
+      ;;
+    err_not_equal_)
+      ! { printf %s "$err_not_equal_" | diff - "$err_file_"; }
+      ;;
+    err_not_regex_)
+      if grep -q "$err_not_regex_" "$err_file_"; then
+        printf 'Found %s regex in:\n' "$err_not_regex_"
+        cat "$err_file_"
+        false
+      fi
+      ;;
+    err_regex_)
+      if ! grep -q "$err_regex_" "$err_file_"; then
+        printf '%s regex not found in:\n' "$err_regex_"
+        cat "$err_file_"
+        false
+      fi
+      ;;
+    out_equal_)
+      printf %s "$out_equal_" | diff - "$out_file_"
+      ;;
+    out_not_equal_)
+      ! { printf %s "$out_not_equal_" | diff - "$out_file_"; }
+      ;;
+    out_not_regex_)
+      if grep -q "$out_not_regex_" "$out_file_"; then
+        printf 'Found %s regex in:\n' "$out_not_regex_"
+        cat "$out_file_"
+        false
+      fi
+      ;;
+    out_regex_)
+      if ! grep -q "$out_regex_" "$out_file_"; then
+        printf '%s regex not found in:\n' "$out_regex_"
+        cat "$out_file_"
+        false
+      fi
+      ;;
+    ret_equal_)
+      if [ "$ret_val_" -ne "$ret_equal_" ]; then
+        printf 'Cmd exit status was %s instead of %s\n' "$ret_val_" "$ret_equal_"
+        false
+      fi
+      ;;
+    ret_not_equal_)
+      if [ "$ret_val_" -eq "$ret_not_equal_" ]; then
+        printf 'Cmd exit status was %s\n' "$ret_val_"
+        false
+      fi
+      ;;
+  esac
+  [ "$?" -ne 0 ]
+}
+
+Test_run() {
+  "$local" index=0
+  "$local" node="$("$cmd_list_"_head_)"
+  "$local" node_value
+  while [ "$index" -lt "$("$cmd_list_"_length_)" ]; do
+    node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    set -- "$@" "$node_value"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+  printf '\e[1;37m|\e[0m \e[1m%s\e[0m - %s' "$self" "$*"
+  "$@" > "$out_file_" 2> "$err_file_"
+  "$self"_ret_val__is "$?"
+  if "$checker_list_"_is_empty; then
+    "$self"_ret_equal 0
+  fi
+  "$checker_list_"_filter failed_checkers call_checker > "$checkers_report_file_" 2>&1
+  rm "$out_file_" "$err_file_"
+  if failed_checkers_is_empty; then
+    printf ' - \e[1;32mOK\e[0m\n'
+  else
+    printf ' - \e[1;31mKO\e[0m\n'
+    return 1
+  fi
+}
+
+class Test_suite  \
+  results_        \
+  tests_          \
+  _add            \
+  _add_quick_test \
+  _run            \
+
+_Test_suite() {
+  shift # name
+
+  "$local" test_list_id="$(List_id)"
+  List "$test_list_id"
+  "$self"_tests__is "$test_list_id"
+}
+
+Test_suite_add() {
+  "$tests_"_append "$@"
+}
+
+Test_suite_add_quick_test() {
+  "$local" test_id="$(Test_id)"
+  Test "$test_id" "$@"
+  "$tests_"_append "$test_id"
+}
+
+# return false if test passed since we want to filter failed tests
+run_test_helper() {
+  "$1"_run
+  [ "$?" -ne 0 ]
+}
+
+print_report_helper() {
+  printf '\e[1;37mX\e[0m \e[0;31mFailed test report\e[0m - \e[1m%s\e[0m\n' "$1"
+  printf '> \e[1mCommand\e[0m - '
+  "$("$1"_cmd_list_)"_print
+  sed 's/.*/  &/' "$("$1"_checkers_report_file_)"
+}
+
+Test_suite_run() {
+  printf '\e[1;37m>\e[0m \e[1;35mRunning\e[0m - \e[1;34m%s\e[0m\n' "$self"
+  "$tests_"_filter failed_tests run_test_helper
+  printf '\e[1;37m=\e[0m \e[1;35mReport\e[0m - \e[1;34m%s\e[0m\n' "$self"
+  if failed_tests_is_empty; then
+    printf '\e[1;32mPASS\e[0m - %s passed\n' "$("$tests_"_length_)"
+  else
+    printf '\e[1;31mFAIL\e[0m - %s/%s failed\n' "$(failed_tests_length_)" "$("$tests_"_length_)"
+    failed_tests_foreach print_report_helper
+  fi
+}
