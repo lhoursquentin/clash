@@ -107,11 +107,11 @@ Object-oriented programming is the solution to those issues, but does not exist 
 
 The goal of this framework to provide a simple solution to the missing object paradigm and to be as portable as possible (working with **dash**/**bash**/**ksh**/**zsh**/**busybox ash**), the only non POSIX feature used being `local` (more info in the **notes** section).
 
-Most importantly the syntax to create and use classes and objects looks exactly like common shell, almost no parsing is done, and the grammar isn't altered using aliases, everything is a function is here.
+Most importantly the syntax to create and use classes and objects is the exact same as usual shell, and that is because  what clash does is only generate functions, almost no parsing is done, and the grammar isn't altered using aliases.
 
 # How
 
-Since almost no parsing is done, the only way to store data is to generate functions, two functions are generated per attribute, one for the getter with the attribute value hardcoded, and the other for the setter which when called redefines the original getter function with a new hardcoded value.
+Two functions are generated per attribute, one for the getter with the attribute value hardcoded, and the other for the setter which when called redefines the original getter function with a new hardcoded value.
 
 Methods are just generated functions wrapping a local declaration of all the attributes and a call of the initially declared function so that it has access to all the attributes in its frame.
 
