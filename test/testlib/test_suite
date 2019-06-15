@@ -88,7 +88,6 @@ Test_ret_not_equal() {
 }
 
 _Test() {
-  shift # name
   "$local" cmd_list_id="$(List_id)"
   List "$cmd_list_id" "$@"
   "$local" checker_list_id="$(List_id)"
@@ -197,8 +196,6 @@ class Test_suite  \
   _run            \
 
 _Test_suite() {
-  shift # name
-
   "$local" test_list_id="$(List_id)"
   List "$test_list_id"
   "$self"_tests__is "$test_list_id"

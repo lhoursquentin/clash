@@ -33,7 +33,7 @@ del() {
   delete_"$1"
 }
 
-class(){
+class() {
   "$local" name="$1"
   shift
   "$local" attr_defs=
@@ -49,8 +49,7 @@ class(){
 
     '"$func_prefix$name$func_suffix"' {
       _'"$name"'_anonymous_id_count="$((_'"$name"'_anonymous_id_count + 1))"'
-  "$local" attr_index=1
-  set -- 'name' "$@"
+  "$local" attr_index=2
   "$local" nb_args="$#"
   while [ "$nb_args" -gt 0 ]; do
     case "$1" in
@@ -79,10 +78,9 @@ class(){
       }'"'"
             ;;
         esac
-        if [ "$1" != 'name' ]; then
-          delete_fn="$delete_fn"'
+        delete_fn="$delete_fn"'
         unset -f '"'"'"$1"'"'"'_'"$1"'_is'
-          attr_methods_defs="$attr_methods_defs"'
+        attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {
         if [ "$self" = '"'"'"$1"'"'"' ]; then
           '"$1"'="$1"
@@ -92,7 +90,6 @@ class(){
           printf %s '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"${_tmp_getter%x}"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
         }'"'"'"'"'"'"'"'"'
       }'"'"
-        fi
         attr_defs="$attr_defs"'
           '"$local"' '"$1"'="$('"'"'"$1"'"'"''"_$1"'; printf x)"
           '"$1"'="${'"$1"'%x}"'
@@ -106,7 +103,7 @@ class(){
         if [ -z "$_upper_object_id" ] ||
            [ "$_upper_object_id" != '"'"'"$1"'"'"' ]
         then'"$attr_defs"'
-          '"$local"' self="$name"
+          '"$local"' self='"'"'"$1"'"'"'
           '"$local"' _upper_object_id='"'"'"$1"'"'"'
         fi'
   for method do
@@ -124,8 +121,9 @@ class(){
       '"$method_defs"'
       '"$attr_methods_defs"'
       '"$delete_fn"'
-      '"$constructor_attr_defs"'
       '"$local"' self="$1"
+      '"$constructor_attr_defs"'
+      shift
       _'"$name"' "$@" 2> /dev/null || :
     }
   '

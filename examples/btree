@@ -6,8 +6,8 @@ if ! . ./clash 2> /dev/null; then
 fi >&2
 
 # method example
-btree_find_value() {
-  printf 'Visiting node %s (%s)\n' "$name" "$value"
+Btree_find_value() {
+  printf 'Visiting node %s (%s)\n' "$self" "$value"
   if [ "$1" -eq "$value" ]; then
     echo 'Found value'
   elif [ -n "$left" ] &&
@@ -23,12 +23,11 @@ btree_find_value() {
 
 # external function example, using generated getters
 find_value() {
-  "$local" name="$("$1"_name)"
   "$local" value="$("$1"_value)"
   "$local" left="$("$1"_left)"
   "$local" right="$("$1"_right)"
+  printf 'Visiting node %s (%s)\n' "$1" "$value"
   shift
-  printf 'Visiting node %s (%s)\n' "$name" "$value"
   if [ "$1" -eq "$value" ]; then
     echo 'Found value'
   elif [ -n "$left" ] &&
@@ -43,8 +42,8 @@ find_value() {
 }
 
 # constructor
-_btree() {
-  printf 'Created %s with value %s\n' "$name" "$value"
+_Btree() {
+  printf 'Created %s with value %s\n' "$self" "$value"
 }
 
 #       20
@@ -53,18 +52,18 @@ _btree() {
 #    / \     \
 #   5   14    60
 
-class btree   \
+class Btree   \
   value       \
   left        \
   right       \
   _find_value \
 
-btree b1 20 b2 b3
-btree b2 8  b4 b5
-btree b3 40 '' b6
-btree b4 5  '' ''
-btree b5 14 '' ''
-btree b6 60 '' ''
+Btree b1 20 b2 b3
+Btree b2 8  b4 b5
+Btree b3 40 '' b6
+Btree b4 5  '' ''
+Btree b5 14 '' ''
+Btree b6 60 '' ''
 
 echo
 

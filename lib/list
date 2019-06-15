@@ -345,7 +345,6 @@ List_append_node_() {
 }
 
 _List() {
-  shift # name
   "$self"_length__is 0
   "$self"_append "$@"
 }

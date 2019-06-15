@@ -44,7 +44,7 @@ class Car \
 # Methods are defined externally and are registered without the class name
 # (see _start above)
 Car_start() {
-  printf 'Starting %s: ' "$name"
+  printf 'Starting %s: ' "$self"
   if [ "$speed" -gt 100 ]; then
     echo 'Vroooooooom'
   else

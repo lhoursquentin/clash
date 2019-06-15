@@ -265,7 +265,6 @@ Vector_shift_right_() {
 }
 
 _Vector() {
-  shift # name
   "$self"_length__is 0
   "$self"_append "$@"
 }
