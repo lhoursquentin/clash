@@ -21,6 +21,7 @@ Most of what you would expect from basic object-oriented programming is supporte
 - attributes
 - methods
 - constructor
+- destructor
 - generated getters
 - generated setters
 

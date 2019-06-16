@@ -36,6 +36,7 @@ class List       \
   _remove        \
   _set           \
   _append_node_  \
+  __del__        \
   __init__       \
 
 check_index_within_range() {
@@ -343,6 +344,10 @@ List_append_node_() {
   fi
   "$self"_tail__is "$1"
   "$self"_length__is "$((length_ + 1))"
+}
+
+List__del__() {
+  "$self"_clear
 }
 
 List__init__() {

@@ -31,6 +31,7 @@ class Vector     \
   _new_node_     \
   _shift_left_   \
   _shift_right_  \
+  __del__        \
   __init__       \
 
 check_index_within_range() {
@@ -263,6 +264,10 @@ Vector_shift_right_() {
     "$self"_Vector_node_"$((index + 1))"_value_is "${value%x}"
     index="$((index - 1))"
   done
+}
+
+Vector__del__() {
+  "$self"_clear
 }
 
 Vector__init__() {

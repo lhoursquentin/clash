@@ -40,8 +40,7 @@ class() {
   "$local" attr_methods_defs=
   "$local" method_defs=
   "$local" constructor_attr_defs=
-  "$local" delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {
-        unset -f delete_'"'"'"$1"'"'"''
+  "$local" delete_fn=
   "$local" class_body='
     '"$func_prefix$name"'_id'"$func_suffix"' {
       printf %s _'"$name"'_anonymous_id_"${_'"$name"'_anonymous_id_count-0}"
@@ -57,14 +56,16 @@ class() {
   "$local" __setattr__=false
   while [ "$nb_args" -gt 0 ]; do
     case "$1" in
-       __del__     \
-      |__getattr__ \
-      |__init__    \
-      |__setattr__ \
-      )
-        "$local" "$1"=true
-        ;;
       _*)
+        case "$1" in
+           __del__     \
+          |__getattr__ \
+          |__init__    \
+          |__setattr__ \
+          )
+            "$local" "$1"=true
+            ;;
+        esac
         set -- "$@" "$1"
         ;;
       *)
@@ -125,7 +126,13 @@ class() {
         '"$name$method"' "$@"
       }'"'"
   done
-  delete_fn="$delete_fn"'
+  if "$__del__"; then
+    delete_fn="'"'"$1"'"'"'__del__
+        '"$delete_fn"
+  fi
+  delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {
+        '"$delete_fn"'
+        unset -f delete_'"'"'"$1"'"'"'
       }'"'"'
   '
   class_body="$class_body"'
