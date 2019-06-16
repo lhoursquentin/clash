@@ -42,7 +42,7 @@ find_value() {
 }
 
 # constructor
-_Btree() {
+Btree__init__() {
   printf 'Created %s with value %s\n' "$self" "$value"
 }
 
@@ -57,6 +57,7 @@ class Btree   \
   left        \
   right       \
   _find_value \
+  __init__    \
 
 Btree b1 20 b2 b3
 Btree b2 8  b4 b5

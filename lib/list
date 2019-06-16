@@ -36,6 +36,7 @@ class List       \
   _remove        \
   _set           \
   _append_node_  \
+  __init__       \
 
 check_index_within_range() {
   # 1 -> index
@@ -344,7 +345,7 @@ List_append_node_() {
   "$self"_length__is "$((length_ + 1))"
 }
 
-_List() {
+List__init__() {
   "$self"_length__is 0
   "$self"_append "$@"
 }

@@ -31,6 +31,7 @@ class Vector     \
   _new_node_     \
   _shift_left_   \
   _shift_right_  \
+  __init__       \
 
 check_index_within_range() {
   # 1 -> index
@@ -264,7 +265,7 @@ Vector_shift_right_() {
   done
 }
 
-_Vector() {
+Vector__init__() {
   "$self"_length__is 0
   "$self"_append "$@"
 }

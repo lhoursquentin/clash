@@ -51,8 +51,19 @@ class() {
       _'"$name"'_anonymous_id_count="$((_'"$name"'_anonymous_id_count + 1))"'
   "$local" attr_index=2
   "$local" nb_args="$#"
+  "$local" __del__=false
+  "$local" __getattr__=false
+  "$local" __init__=false
+  "$local" __setattr__=false
   while [ "$nb_args" -gt 0 ]; do
     case "$1" in
+       __del__     \
+      |__getattr__ \
+      |__init__    \
+      |__setattr__ \
+      )
+        "$local" "$1"=true
+        ;;
       _*)
         set -- "$@" "$1"
         ;;
@@ -120,12 +131,18 @@ class() {
   class_body="$class_body"'
       '"$method_defs"'
       '"$attr_methods_defs"'
-      '"$delete_fn"'
+      '"$delete_fn"
+
+  if "$__init__"; then
+    class_body="$class_body"'
       '"$local"' self="$1"
       '"$constructor_attr_defs"'
       shift
-      _'"$name"' "$@" 2> /dev/null || :
-    }
-  '
+      '"$name"'__init__ "$@"'
+  fi
+
+  class_body="$class_body"'
+    }'
+
   eval "$class_body"
 }

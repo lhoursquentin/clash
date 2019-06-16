@@ -36,6 +36,7 @@ class Test              \
   _ret_equal            \
   _ret_not_equal        \
   _run                  \
+  __init__              \
 
 Test_err_equal() {
   "$checker_list_"_append err_equal_
@@ -87,7 +88,7 @@ Test_ret_not_equal() {
   "$self"_ret_not_equal__is "$1"
 }
 
-_Test() {
+Test__init__() {
   "$local" cmd_list_id="$(List_id)"
   List "$cmd_list_id" "$@"
   "$local" checker_list_id="$(List_id)"
@@ -194,8 +195,9 @@ class Test_suite  \
   _add            \
   _add_quick_test \
   _run            \
+  __init__        \
 
-_Test_suite() {
+Test_suite__init__() {
   "$local" test_list_id="$(List_id)"
   List "$test_list_id"
   "$self"_tests__is "$test_list_id"

@@ -52,6 +52,7 @@ class Dict       \
   _pretty_print  \
   _set           \
   _values        \
+  __init__       \
 
 Dict_get() {
   "$local" hash_value="$("$hash_function" "$1")"
@@ -99,7 +100,7 @@ Dict_set() {
   fi
 }
 
-_Dict() {
+Dict__init__() {
   "$local" list_id="$(List_id)"
   List "$list_id"
   "$self"_buckets__is "$list_id"

@@ -36,10 +36,11 @@ Not supported:
 
 ```bash
 # Create a class
-class Car \
-  brand   \
-  speed   \
-  _start  \
+class Car   \
+  brand     \
+  speed     \
+  _start    \
+  __init__  \
 
 # Methods are defined externally and are registered without the class name
 # (see _start above)
@@ -53,7 +54,7 @@ Car_start() {
 }
 
 # If declared, the constructor is called when creating the object
-_Car() {
+Car__init__() {
   echo "New $brand added to the garage"
 }
 ```
