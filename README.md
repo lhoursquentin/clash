@@ -4,17 +4,22 @@ Portable shell oriented-object programming
 # What
 Define classes and instanciate objects in shell with the usual shell functions syntax.
 
-Compatible with most Bourne like shells, including:
+Compatible with most Bourne like shells
 
-- dash
-- bash
-- ksh
-- zsh
-- busybox shell (ash with bash compatibility)
+| Shell    | Versions tested           | Support                       |
+| -------- | ------------------------- | ----------------------------- |
+| bash     | 3.0 / 4.4 / 5.0           | Full                          |
+| busybox  | 1.28 (ash w/ bash compat) | Full                          |
+| dash     | 0.5.10.2                  | Full                          |
+| ksh      | AT&T 93u+                 | clash 100%, lib 80%, test 50% |
+| mksh     | R57                       | Full                          |
+| osh      | 0.6.pre21                 | 0% - early testing            |
+| yash     | 2.48                      | Full                          |
+| zsh      | 5.6.2                     | Full                          |
 
 ## Features
 
-Most of what you would expect from basic object-oriented programming is supported:
+What you would expect from basic object-oriented programming is supported:
 
 - classes
 - objects
