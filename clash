@@ -30,7 +30,7 @@ quote() {
 }
 
 del() {
-  delete_"$1"
+  __internal_del__"$1"
 }
 
 class() {
@@ -130,9 +130,9 @@ class() {
     delete_fn="'"'"$1"'"'"'__del__
         '"$delete_fn"
   fi
-  delete_fn='eval '"$func_prefix"'delete_"$1"'"'"''"$func_suffix"' {
+  delete_fn='eval '"$func_prefix"'__internal_del__"$1"'"'"''"$func_suffix"' {
         '"$delete_fn"'
-        unset -f delete_'"'"'"$1"'"'"'
+        unset -f __internal_del__'"'"'"$1"'"'"'
       }'"'"'
   '
   class_body="$class_body"'

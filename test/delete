@@ -1,0 +1,10 @@
+#!/usr/bin/env -S -i bash
+
+. ./lib/list
+List foobar 1 2 3
+del foobar
+if typeset -f | grep foobar; then
+  echo FAIL
+  exit 1
+fi
+echo PASS
