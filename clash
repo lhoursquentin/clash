@@ -42,7 +42,7 @@ class() {
   "$local" constructor_attr_defs=
   "$local" delete_fn=
   "$local" class_body='
-    '"$func_prefix$name"'_id'"$func_suffix"' {
+    '"$func_prefix$name"'_anonymous_id'"$func_suffix"' {
       printf %s _'"$name"'_anonymous_id_"${_'"$name"'_anonymous_id_count-0}"
     }
 

@@ -62,7 +62,7 @@ get_positive_index() {
 List_append() {
   "$local" node_id
   for value do
-    node_id="$(List_node_id)"
+    node_id="$(List_node_anonymous_id)"
     List_node "$node_id" "$value"
     "$self"_append_node_ "$node_id"
   done
@@ -172,7 +172,7 @@ List_insert() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  "$local" node_id="$(List_node_id)"
+  "$local" node_id="$(List_node_anonymous_id)"
   List_node "$node_id" "$2" "$node" "$prev_node"
   if [ -n "$prev_node" ]; then
     "$prev_node"_next_is "$node_id"

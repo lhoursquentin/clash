@@ -88,12 +88,12 @@ Dict_pretty_print() {
 Dict_set() {
   "$local" hash_value="$("$hash_function" "$1")"
   "$local" node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
-  "$local" tuple_id="$(Dict_tuple_id)"
+  "$local" tuple_id="$(Dict_tuple_anonymous_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
   if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
     "$tuple_list"_append "$tuple_id"
   else
-    "$local" list_id="$(List_id)"
+    "$local" list_id="$(List_anonymous_id)"
     List "$list_id" "$tuple_id"
     List_node "$node"_tuple_list "$list_id"
     "$buckets_"_append_node_ "$node"_tuple_list
@@ -101,7 +101,7 @@ Dict_set() {
 }
 
 Dict__init__() {
-  "$local" list_id="$(List_id)"
+  "$local" list_id="$(List_anonymous_id)"
   List "$list_id"
   "$self"_buckets__is "$list_id"
   "$self"_hash_function_is dummy_hash
