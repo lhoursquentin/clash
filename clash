@@ -95,7 +95,12 @@ class() {
         delete_fn="$delete_fn"'
         unset -f '"'"'"$1"'"'"'_'"$1"'_is'
         attr_methods_defs="$attr_methods_defs"'
-      eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {
+      eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {'
+        if "$__setattr__"; then
+          attr_methods_defs="$attr_methods_defs"'
+        '"'"'"$1"'"'"'__setattr__ '"$1"' "$1"'
+        fi
+        attr_methods_defs="$attr_methods_defs"'
         if [ "$self" = '"'"'"$1"'"'"' ]; then
           '"$1"'="$1"
         fi
