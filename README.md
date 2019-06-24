@@ -66,10 +66,10 @@ Car__init__() {
 ```
 
 ```bash
-# Create a new car object named 'cool_bolid', _Car function is called
+# Create a new car object named 'cool_bolid', Car__init__ function is called
 Car cool_bolid Ferrari 200
 
-# Create another one, _Car function is called
+# Create another one, Car__init__ function is called
 Car family_truck Toyota 90
 ```
 
