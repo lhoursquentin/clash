@@ -54,18 +54,20 @@ class() {
   "$local" __getattr__=false
   "$local" __init__=false
   "$local" __setattr__=false
+  for arg do
+    case "$arg" in
+       __del__     \
+      |__getattr__ \
+      |__init__    \
+      |__setattr__ \
+      )
+        "$local" "$arg"=true
+        ;;
+    esac
+  done
   while [ "$nb_args" -gt 0 ]; do
     case "$1" in
       _*)
-        case "$1" in
-           __del__     \
-          |__getattr__ \
-          |__init__    \
-          |__setattr__ \
-          )
-            "$local" "$1"=true
-            ;;
-        esac
         set -- "$@" "$1"
         ;;
       *)
