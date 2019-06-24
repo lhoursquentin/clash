@@ -93,19 +93,72 @@ Starting family_truck: Vroom
 # check the family truck speed (generated getter)
 echo "Family truck speed: $(family_truck_speed)"
 
-# upgrade the engine (generated setters are suffixed by _is)
+# Modify the speed (generated setters are suffixed by _is)
+echo 'Upgrading truck engine...'
 family_truck_speed_is 120
 
-# start it again
+# Start it again
 family_truck_start
 ```
 
 ```
 Family truck speed: 90
+Upgrading truck engine...
 Starting family_truck: Vroooooooom
 ```
 
-Note: this code can be found in the `examples` folder.
+### Lib
+
+Simple implementations of **List** and **Vector** have been done so far
+(**Dict** in progress), they can be found in the `lib` directory.
+
+Following-up with our example:
+
+```bash
+# Load the list module (containing the List class)
+. ./lib/list
+```
+
+```bash
+# create a list of my cars
+List my_cars cool_bolid family_truck
+
+# Create a new one
+Car minivan Toyota 80
+
+# And add it to the list
+my_cars_append minivan
+
+# Print the elements
+printf 'My cars: '
+my_cars_print
+```
+
+```
+New Toyota added to the garage
+My cars: cool_bolid family_truck minivan
+```
+
+```bash
+# Let's say we want the list of our Toyota cars, let's create a helper function
+is_toyota() {
+  # $1 is the car object, return 0 if the brand is Toyota, else 1
+  [ "$("$1"_brand)" = Toyota ]
+}
+
+# And use the List filter method with our newly created helper function
+my_cars_filter my_toyota_cars is_toyota
+
+# Check the result
+printf 'My Toyota cars: '
+my_toyota_cars_print
+```
+
+```
+My Toyota cars: family_truck minivan
+```
+
+Note: this code can be found in the `examples` directory.
 
 # Why
 

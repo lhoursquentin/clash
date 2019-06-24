@@ -15,7 +15,7 @@ class Car   \
 # Methods are defined externally and are registered without the class name
 # (see _start above)
 Car_start() {
-  echo "Starting $self"
+  printf 'Starting %s: ' "$self"
   if [ "$speed" -gt 100 ]; then
     echo 'Vroooooooom'
   else
@@ -45,5 +45,34 @@ echo "Family truck speed: $(family_truck_speed)"
 echo 'Upgrading truck engine...'
 family_truck_speed_is 120
 
-# start it again
+# Start it again
 family_truck_start
+
+# Load the list module (containing the List class)
+. ./lib/list
+
+# create a list of my cars
+List my_cars cool_bolid family_truck
+
+# Create a new one
+Car minivan Toyota 80
+
+# And add it to the list
+my_cars_append minivan
+
+# Check the list contents
+printf 'My cars: '
+my_cars_print
+
+# Let's say we want the list of our Toyota cars, let's create a helper function
+is_toyota() {
+  # $1 is the car object, return 0 if the brand is Toyota, else 1
+  [ "$("$1"_brand)" = Toyota ]
+}
+
+# And use the List filter method with our newly created helper function
+my_cars_filter my_toyota_cars is_toyota
+
+# Check the result
+printf 'My Toyota cars: '
+my_toyota_cars_print
