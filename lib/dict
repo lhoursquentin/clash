@@ -41,10 +41,20 @@ Dict_tuple_print() {
   printf ')'
 }
 
+# Any decent hash function written in shell will be far from fast, we'll keep
+# this structure to avoid recomputing the hash function if 2 successive lookups
+# are done. This basically just keeps the last key/hash computation.
+class Dict_hash_cache \
+  stale               \
+  key                 \
+  hash                \
+
 class Dict       \
-  hash_function  \
   buckets_       \
+  hash_function_ \
+  last_hashed_   \
   _clear         \
+  _hash_function \
   _get           \
   _keys          \
   _length        \
@@ -54,8 +64,25 @@ class Dict       \
   _values        \
   __init__       \
 
+Dict_hash_function() {
+  if "$buckets_"_is_empty; then
+    "$("$self"_last_hashed_)"_stale_is true
+    "$self"_hash_function__is "$1"
+  else
+    echo 'Dict is not empty, cannot change hash function' >&2
+  fi
+}
+
 Dict_get() {
-  "$local" hash_value="$("$hash_function" "$1")"
+  if ! "$("$last_hashed_"_stale)" &&
+     [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
+    "$local" hash_value="$("$last_hashed_"_hash)"
+  else
+    "$local" hash_value="$("$hash_function_" "$1")"
+    "$last_hashed_"_key_is "$1"
+    "$last_hashed_"_hash_is "$hash_value"
+    "$last_hashed_"_stale_is false
+  fi
   "$local" tuple
   "$local" tuple_list
   if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
@@ -70,6 +97,7 @@ Dict_get() {
     printf %s "${value%x}"
   else
     printf 'Key not found: %s\n' "$1" >&2
+    return 1
   fi
 }
 
@@ -86,7 +114,18 @@ Dict_pretty_print() {
 }
 
 Dict_set() {
-  "$local" hash_value="$("$hash_function" "$1")"
+  if [ "$("$self"_get "$1" 2> /dev/null; printf x)" = "$2"x ]; then
+    return 0
+  fi
+  if ! "$("$last_hashed_"_stale)" &&
+     [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
+    "$local" hash_value="$("$last_hashed_"_hash)"
+  else
+    "$local" hash_value="$("$hash_function_" "$1")"
+    "$last_hashed_"_key_is "$1"
+    "$last_hashed_"_hash_is "$hash_value"
+    "$last_hashed_"_stale_is false
+  fi
   "$local" node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
   "$local" tuple_id="$(Dict_tuple_anonymous_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
@@ -101,8 +140,12 @@ Dict_set() {
 }
 
 Dict__init__() {
+  "$local" hash_cache_id="$(Dict_hash_cache_anonymous_id)"
+  Dict_hash_cache "$hash_cache_id" true
+  "$self"_last_hashed__is "$hash_cache_id"
   "$local" list_id="$(List_anonymous_id)"
   List "$list_id"
   "$self"_buckets__is "$list_id"
-  "$self"_hash_function_is dummy_hash
+  # no need to use our wrapper here, the dict will always be empty at this point
+  "$self"_hash_function__is dummy_hash
 }
