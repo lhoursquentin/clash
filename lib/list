@@ -240,15 +240,13 @@ List_pop() {
 }
 
 List_pretty_print() {
-  printf '== %s == (length: %s, head: %s, tail: %s)
-' "$self" "$length_" "$([ -n "$head_" ] && "$head_"_value)" \
-                     "$([ -n "$tail_" ] && "$tail_"_value)"
+  printf '== %s == (length: %s)\n' "$self" "$length_"
   index=0
   node="$head_"
   while [ "$index" -lt "$length_" ]; do
     value="$("$node"_value; printf x)"
     value="${value%x}"
-    printf '%s: %s (%s)\n' "$index" "$value" "$node"
+    printf '%s: %s\n' "$index" "$value"
     node="$("$node"_next)"
     index="$((index + 1))"
   done

@@ -57,7 +57,6 @@ assert_out "$(mylist_tail_)"_value -- 'pql'
 # Insert tail elt
 assert_true mylist_insert 8 'end' -- 'Failed to insert element at the end'
 assert_out mylist_length_ -- 9
-mylist_pretty_print
 assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql end 
 '
 assert_out "$(mylist_head_)"_value -- 'begin'

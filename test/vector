@@ -47,7 +47,6 @@ assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql
 
 assert_true myvector_insert 8 'end' -- 'Failed to insert element at the end'
 assert_out myvector_length_ -- 9
-myvector_pretty_print
 assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql end 
 '
 
