@@ -12,80 +12,94 @@ class Test              \
   checkers_report_file_ \
   cmd_list_             \
   description_          \
-  err_equal_            \
   err_file_             \
-  err_not_equal_        \
-  err_not_regex_        \
-  err_regex_            \
-  out_equal_            \
   out_file_             \
-  out_not_equal_        \
-  out_not_regex_        \
-  out_regex_            \
-  ret_equal_            \
-  ret_not_equal_        \
   ret_val_              \
-  _err_equal            \
-  _err_not_equal        \
-  _err_not_regex        \
-  _err_regex            \
-  _out_equal            \
-  _out_not_equal        \
-  _out_not_regex        \
-  _out_regex            \
-  _ret_equal            \
-  _ret_not_equal        \
+  err_equal             \
+  err_not_equal         \
+  err_not_regex         \
+  err_regex             \
+  out_equal             \
+  out_not_equal         \
+  out_not_regex         \
+  out_regex             \
+  ret_equal             \
+  ret_not_equal         \
+  _check_err_equal      \
+  _check_err_not_equal  \
+  _check_err_not_regex  \
+  _check_err_regex      \
+  _check_out_equal      \
+  _check_out_not_equal  \
+  _check_out_not_regex  \
+  _check_out_regex      \
+  _check_ret_equal      \
+  _check_ret_not_equal  \
   _run                  \
+  _check_failed_        \
   __init__              \
+  __setattr__           \
 
-Test_err_equal() {
-  "$checker_list_"_append err_equal_
-  "$self"_err_equal__is "$1"
+Test_check_err_equal() {
+  printf %s "$err_equal" | diff - "$err_file_"
 }
 
-Test_err_not_equal() {
-  "$checker_list_"_append err_not_equal_
-  "$self"_err_not_equal__is "$1"
+Test_check_err_not_equal() {
+  ! { printf %s "$err_not_equal" | diff - "$err_file_"; }
 }
 
-Test_err_not_regex() {
-  "$checker_list_"_append err_not_regex_
-  "$self"_err_not_regex__is "$1"
+Test_check_err_not_regex() {
+  if grep -q "$err_not_regex" "$err_file_"; then
+    printf 'Found %s regex in:\n' "$err_not_regex"
+    cat "$err_file_"
+    return 1
+  fi
 }
 
-Test_err_regex() {
-  "$checker_list_"_append err_regex_
-  "$self"_err_regex__is "$1"
+Test_check_err_regex() {
+  if ! grep -q "$err_regex" "$err_file_"; then
+    printf '%s regex not found in:\n' "$err_regex"
+    cat "$err_file_"
+    return 1
+  fi
 }
 
-Test_out_equal() {
-  "$checker_list_"_append out_equal_
-  "$self"_out_equal__is "$1"
+Test_check_out_equal() {
+  printf %s "$out_equal" | diff - "$out_file_"
 }
 
-Test_out_not_equal() {
-  "$checker_list_"_append out_not_equal_
-  "$self"_out_not_equal__is "$1"
+Test_check_out_not_equal() {
+  ! { printf %s "$out_not_equal" | diff - "$out_file_"; }
 }
 
-Test_out_not_regex() {
-  "$checker_list_"_append out_not_regex_
-  "$self"_out_not_regex__is "$1"
+Test_check_out_not_regex() {
+  if grep -q "$out_not_regex" "$out_file_"; then
+    printf 'Found %s regex in:\n' "$out_not_regex"
+    cat "$out_file_"
+    return 1
+  fi
 }
 
-Test_out_regex() {
-  "$checker_list_"_append out_regex_
-  "$self"_out_regex__is "$1"
+Test_check_out_regex() {
+  if ! grep -q "$out_regex" "$out_file_"; then
+    printf '%s regex not found in:\n' "$out_regex"
+    cat "$out_file_"
+    return 1
+  fi
 }
 
-Test_ret_equal() {
-  "$checker_list_"_append ret_equal_
-  "$self"_ret_equal__is "$1"
+Test_check_ret_equal() {
+  if [ "$ret_val_" -ne "$ret_equal" ]; then
+    printf 'Cmd exit status was %s instead of %s\n' "$ret_val_" "$ret_equal"
+    return 1
+  fi
 }
 
-Test_ret_not_equal() {
-  "$checker_list_"_append ret_not_equal_
-  "$self"_ret_not_equal__is "$1"
+Test_check_ret_not_equal() {
+  if [ "$ret_val_" -eq "$ret_not_equal" ]; then
+    printf 'Cmd exit status was %s\n' "$ret_val_"
+    return 1
+  fi
 }
 
 Test__init__() {
@@ -101,65 +115,18 @@ Test__init__() {
   "$self"_out_file__is "$(mktemp)"
 }
 
-# FIXME this is dirty, could create a matcher class to break this down
-# return 0 if checker failed
-call_checker() {
-  printf '\e[0;34mVerification\e[0m - %s\n' "$1"
+Test__setattr__() {
   case "$1" in
-    err_equal_)
-      printf %s "$err_equal_" | diff - "$err_file_"
-      ;;
-    err_not_equal_)
-      ! { printf %s "$err_not_equal_" | diff - "$err_file_"; }
-      ;;
-    err_not_regex_)
-      if grep -q "$err_not_regex_" "$err_file_"; then
-        printf 'Found %s regex in:\n' "$err_not_regex_"
-        cat "$err_file_"
-        false
-      fi
-      ;;
-    err_regex_)
-      if ! grep -q "$err_regex_" "$err_file_"; then
-        printf '%s regex not found in:\n' "$err_regex_"
-        cat "$err_file_"
-        false
-      fi
-      ;;
-    out_equal_)
-      printf %s "$out_equal_" | diff - "$out_file_"
-      ;;
-    out_not_equal_)
-      ! { printf %s "$out_not_equal_" | diff - "$out_file_"; }
-      ;;
-    out_not_regex_)
-      if grep -q "$out_not_regex_" "$out_file_"; then
-        printf 'Found %s regex in:\n' "$out_not_regex_"
-        cat "$out_file_"
-        false
-      fi
-      ;;
-    out_regex_)
-      if ! grep -q "$out_regex_" "$out_file_"; then
-        printf '%s regex not found in:\n' "$out_regex_"
-        cat "$out_file_"
-        false
-      fi
-      ;;
-    ret_equal_)
-      if [ "$ret_val_" -ne "$ret_equal_" ]; then
-        printf 'Cmd exit status was %s instead of %s\n' "$ret_val_" "$ret_equal_"
-        false
-      fi
-      ;;
-    ret_not_equal_)
-      if [ "$ret_val_" -eq "$ret_not_equal_" ]; then
-        printf 'Cmd exit status was %s\n' "$ret_val_"
-        false
-      fi
+    # FIXME dirty
+    *equal|*regex)
+      "$checker_list_"_append "$1"
       ;;
   esac
-  [ "$?" -ne 0 ]
+}
+
+Test_check_failed_() {
+  printf '\e[0;34mVerification\e[0m - %s\n' "$1"
+  ! "$self"_check_"$1"
 }
 
 Test_run() {
@@ -177,9 +144,9 @@ Test_run() {
   "$@" > "$out_file_" 2> "$err_file_"
   "$self"_ret_val__is "$?"
   if "$checker_list_"_is_empty; then
-    "$self"_ret_equal 0
+    "$self"_ret_equal_is 0
   fi
-  "$checker_list_"_filter failed_checkers call_checker > "$checkers_report_file_" 2>&1
+  "$checker_list_"_filter failed_checkers "$self"_check_failed_ > "$checkers_report_file_" 2>&1
   rm "$out_file_" "$err_file_"
   if failed_checkers_is_empty; then
     printf ' - \e[1;32mOK\e[0m\n'
