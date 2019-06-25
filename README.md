@@ -6,16 +6,16 @@ Define classes and instanciate objects in shell with the usual shell functions s
 
 Compatible with most Bourne like shells
 
-| Shell    | Versions tested           | Support                       |
-| -------- | ------------------------- | ----------------------------- |
-| bash     | 3.0 / 4.4 / 5.0           | Full                          |
-| busybox  | 1.28 (ash w/ bash compat) | Full                          |
-| dash     | 0.5.10.2                  | Full                          |
-| ksh      | AT&T 93u+                 | clash 100%, lib 80%, test 50% |
-| mksh     | R57                       | Full                          |
-| osh      | 0.6.pre21                 | 0% - early testing            |
-| yash     | 2.48                      | Full                          |
-| zsh      | 5.6.2                     | Full                          |
+| Shell    | Versions tested           | Support                          |
+| -------- | ------------------------- | -------------------------------- |
+| bash     | 3.0 / 4.4 / 5.0           | Full                             |
+| busybox  | 1.28 (ash w/ bash compat) | Full                             |
+| dash     | 0.5.10.2                  | Full                             |
+| ksh      | AT&T 93u+                 | clash 100%, lib 80%, test 50%    |
+| mksh     | R57                       | Full                             |
+| osh      | 0.6.pre21                 | See [osh branch](https://github.com/lhoursquentin/clash/tree/osh) |
+| yash     | 2.48                      | Full                             |
+| zsh      | 5.6.2                     | Full                             |
 
 ## Features
 
