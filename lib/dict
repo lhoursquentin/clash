@@ -69,6 +69,7 @@ Dict_hash_function() {
     "$self"_hash_function__is "$1"
   else
     echo 'Dict is not empty, cannot change hash function' >&2
+    return 1
   fi
 }
 
