@@ -1,8 +1,8 @@
 #!/bin/sh
 
-. ./test/testlib/assert
+. "${CLASH_ROOT-.}"/test/testlib/assert
 
-. ./lib/vector
+. "${CLASH_ROOT-.}"/lib/vector
 
 # Vector creation
 assert_true Vector myvector 'abc' 'def' 'ghi' 'jkl' 'mno' -- 'Failed vector creation'

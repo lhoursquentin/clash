@@ -1,8 +1,8 @@
 #!/bin/sh
 
-. ./test/testlib/assert
+. "${CLASH_ROOT-.}"/test/testlib/assert
 
-. ./lib/list
+. "${CLASH_ROOT-.}"/lib/list
 
 # List creation
 assert_true List mylist 'abc' 'def' 'ghi' 'jkl' 'mno' -- 'Failed list creation'

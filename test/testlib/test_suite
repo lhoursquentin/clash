@@ -1,11 +1,11 @@
 #!/bin/sh
 
-if ! [ -f ./lib/list ]; then
+if ! [ -f "${CLASH_ROOT-.}"/lib/list ]; then
   echo 'Could not locate clash'
   exit 1
 fi >&2
 
-. ./lib/list
+. "${CLASH_ROOT-.}"/lib/list
 
 class Test              \
   checker_list_         \

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. ./test/testlib/test_suite
+. "${CLASH_ROOT-.}"/test/testlib/test_suite
 
 check_equals_1() {
   if [ "$1" -eq 1 ]; then

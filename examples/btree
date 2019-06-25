@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if ! . ./clash 2> /dev/null; then
+if ! . "${CLASH_ROOT-.}"/clash 2> /dev/null; then
   echo 'Could not locate clash, please run the example from the clash directory'
   exit 1
 fi >&2
