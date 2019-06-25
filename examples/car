@@ -49,7 +49,7 @@ family_truck_speed_is 120
 family_truck_start
 
 # Load the list module (containing the List class)
-. "${CLASH_ROOT-.}"/lib/list
+. "${CLASH_ROOT-.}"/lib/list || exit
 
 # create a list of my cars
 List my_cars cool_bolid family_truck

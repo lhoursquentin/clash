@@ -1,11 +1,10 @@
 #!/bin/sh
 
-if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
-  echo 'Could not locate clash'
+if ! [ -f "${CLASH_ROOT-.}"/lib/list ]; then
+  echo 'Could not locate lib/list'
   exit 1
 fi >&2
 
-. "${CLASH_ROOT-.}"/clash
 . "${CLASH_ROOT-.}"/lib/list
 
 dummy_hash() {

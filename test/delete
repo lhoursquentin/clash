@@ -1,6 +1,7 @@
 #!/usr/bin/env -S -i bash
 
-. "${CLASH_ROOT-.}"/lib/list
+. "${CLASH_ROOT-.}"/lib/list || exit
+
 List foobar 1 2 3
 del foobar
 if typeset -f | grep foobar; then

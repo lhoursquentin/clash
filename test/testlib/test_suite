@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if ! [ -f "${CLASH_ROOT-.}"/lib/list ]; then
-  echo 'Could not locate clash'
+  echo 'Could not locate lib/list'
   exit 1
 fi >&2
 
