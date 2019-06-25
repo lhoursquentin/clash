@@ -142,9 +142,9 @@ IFS=':'
 assert_out mylist_print -- 'def:foo:mno:
 '
 IFS=
-# When IFS is empty or unset the default should be space
-assert_out mylist_print -- 'def foo mno 
+assert_out mylist_print -- 'deffoomno
 '
+# When IFS is unset the default should be space
 unset IFS
 assert_out mylist_print -- 'def foo mno 
 '

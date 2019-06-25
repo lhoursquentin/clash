@@ -196,9 +196,14 @@ Vector_print() {
         printf '%s' "$1"
       fi
       PATH="$OLD_PATH"
-      "$local" tmp="${IFS#?}"
-      "$local" delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
-      printf %s "${delim:- }" # Use a space if IFS is unset
+      "$local" delim=
+      if [ -z "${IFS+x}" ]; then
+        delim=' ' # space delimiter if IFS is unset
+      elif [ -n "$IFS" ]; then
+        "$local" tmp="${IFS#?}"
+        delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
+      fi
+      printf %s "$delim"
     }
     "$self"_foreach node_printer
   )
