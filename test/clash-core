@@ -1,0 +1,66 @@
+#!/bin/sh
+
+# clash core tests
+
+. "${CLASH_ROOT-.}"/test/testlib/assert || exit
+
+. "${CLASH_ROOT-.}"/clash || exit
+
+# =====================================================
+# 1d97012 clash: fix double digit attributes assignment
+
+class Foo a b c d e f g h i j k l m n o p
+
+Foo foo
+
+# would return foo3 before the bug fix
+assert_out foo_l -- ''
+
+# sanity check
+assert_true foo_l -- 'Failed to call getter'
+
+# class is too big and will slow down the rest of the tests, get rid of it
+del foo
+unset Foo
+
+# ===============================
+# Check getters preserve trailing whitespaces (and begin/middle ones too)
+
+class Foo a b c
+
+attr1='
+
+newlines
+
+
+'
+
+attr2='     spaces     '
+attr3='			tabs			'
+
+# check assigment via constructor
+Foo foo "$attr1" "$attr2" "$attr3"
+
+assert_out foo_a -- "$attr1"
+assert_out foo_b -- "$attr2"
+assert_out foo_c -- "$attr3"
+
+attr1="    s     $attr1"
+attr2="    s     $attr2"
+attr3="    s     $attr3"
+
+# and via setters
+
+foo_a_is "$attr1"
+foo_b_is "$attr2"
+foo_c_is "$attr3"
+
+assert_out foo_a -- "$attr1"
+assert_out foo_b -- "$attr2"
+assert_out foo_c -- "$attr3"
+
+# manual check just in case the testlib is the one not preserving whitespaces
+[ "$(foo_a; printf x)" = "$attr1"x ]
+assert_true [ "$?" -eq 0 ] -- 'Testlib issue?'
+
+end_tests
