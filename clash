@@ -93,12 +93,12 @@ class() {
             ;;
           *)
             constructor_attr_defs="$constructor_attr_defs"'
-      '"$local"' '"$1"'="$'"$attr_index"'"'
+      '"$local"' '"$1"'="${'"$attr_index"'}"'
             attr_methods_defs="$attr_methods_defs"'
-      '"$local"' _tmp_getter="$'"$attr_index"'"
-      case "$'"$attr_index"'" in
+      '"$local"' _tmp_getter="${'"$attr_index"'}"
+      case "${'"$attr_index"'}" in
         *"'"'"'"*)
-          _tmp_getter="$(quote "$'"$attr_index"'"; printf x)"
+          _tmp_getter="$(quote "${'"$attr_index"'}"; printf x)"
           _tmp_getter="${_tmp_getter%x}"
           ;;
       esac
