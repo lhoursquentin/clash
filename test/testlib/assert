@@ -21,11 +21,12 @@ condition()
 }
 
 assert() {
-  condition "$@" > /dev/null 2>&1
+  condition "$@"
   if [ "$?" "$assert_operator" 0 ]; then
     return
   fi
 
+  assertion="$*"
   shift "$((separator_index + 1))"
   {
     if [ -t 2 ]; then
@@ -36,7 +37,10 @@ assert() {
     printf "$@"
     echo
   } >&2
-  exit 1
+  failed_assertions="$failed_assertions
+$assertion
+$(printf '\e[1;34m-------------------------------------\e[0m')"
+  return 1
 }
 
 assert_true() {
@@ -54,16 +58,23 @@ assert_false() {
 assert_out() {
   printf '%s\n' "$*"
   out_file="$(mktemp)"
-  condition "$@" > "$out_file" 2> /dev/null
+  condition "$@" > "$out_file"
   shift "$((separator_index + 1))"
   output="$(cat "$out_file"; printf x)"
   output="${output%x}"
   assert_operator='='
-  assert [ "$output" = "$*" ] -- 'Output differ:
---- expected ---
-%s
----- actual ----
-%s
-----------------' "$*" "$output"
+  assert [ "$output" = "$*" ] -- 'Output differ'
+  ret="$?"
   rm "$out_file"
+  return "$ret"
+}
+
+end_tests() {
+  printf '\e[1m================ END ================\e[0m\n'
+  if [ -z "$failed_assertions" ]; then
+    printf '\e[1;32mPASS\e[0m\n'
+  else
+    printf '%s\n\e[1;31mFAIL\e[0m\n' "$failed_assertions"
+    return 1
+  fi
 }

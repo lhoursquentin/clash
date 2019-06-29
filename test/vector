@@ -207,3 +207,5 @@ baz: 150 km/h
 
 '
 IFS="$OLD_IFS"
+
+end_tests
