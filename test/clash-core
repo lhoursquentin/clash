@@ -63,4 +63,18 @@ assert_out foo_c -- "$attr3"
 [ "$(foo_a; printf x)" = "$attr1"x ]
 assert_true [ "$?" -eq 0 ] -- 'Testlib issue?'
 
+del foo
+
+# Check objects can hold single and double quotes strings
+
+assert_true Foo single "a'b" -- 'Failed object creation with single quoted attr'
+assert_out single_a -- "a'b"
+assert_true single_a_is "a'b" -- 'Failed setter with single quoted value'
+del single
+
+assert_true Foo double 'a"b' -- 'Failed object creation with double quoted attr'
+assert_out double_a -- 'a"b'
+assert_true double_a_is 'a"b' -- 'Failed setter with double quoted value'
+del double
+
 end_tests
