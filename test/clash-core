@@ -24,9 +24,19 @@ del foo
 unset Foo
 
 # ===============================
-# Check getters preserve trailing whitespaces (and begin/middle ones too)
+# Setup a new simple class with a method
+class Foo \
+  a       \
+  b       \
+  c       \
+  _printa \
 
-class Foo a b c
+Foo_printa() {
+  printf %s "$a"
+}
+
+# ===============================
+# Check getters preserve trailing whitespaces (and begin/middle ones too)
 
 attr1='
 
@@ -65,6 +75,7 @@ assert_true [ "$?" -eq 0 ] -- 'Testlib issue?'
 
 del foo
 
+# ===============================
 # Check objects can hold single and double quotes strings
 
 assert_true Foo single "a'b" -- 'Failed object creation with single quoted attr'
@@ -76,5 +87,97 @@ assert_true Foo double 'a"b' -- 'Failed object creation with double quoted attr'
 assert_out double_a -- 'a"b'
 assert_true double_a_is 'a"b' -- 'Failed setter with double quoted value'
 del double
+
+# ===============================
+# Check attributes shadowing
+#
+# Different objects method calls with the same attributes names
+
+class Bar  \
+  a        \
+  _printa  \
+  _foo_mod \
+
+Bar_printa() {
+  printf %s "$a"
+}
+
+Bar_foo_mod() {
+  "$1"_a # check foo's value is not shadowed by bar's one
+  "$1"_a_is 3
+  # foo $a value modification should not affect bar's method frame
+  printf ' %s ' "$a"
+  "$self"_printa # check own frame cache is not affected by another object
+  printf ' '
+  "$1"_printa # foo's method attributes should be be affected by bar's env
+  "$self"_a_is 4 # set bar's value
+  # foo's value should not be affected
+  printf ' '
+  "$1"_printa
+  printf ' '
+  "$1"_a
+  printf ' '
+  # at last check bar's attr new value
+  "$self"_a
+}
+
+Foo foo 1
+Bar bar 2
+
+assert_out bar_foo_mod foo -- '1 2 2 3 3 3 4'
+
+del bar
+del foo
+
+# ===============================
+# Check setter caller frame leaking
+#
+# foo_a_is 1 should reflect `a' modification in the frame that called the setter
+# only if said frame is a method of foo, we don't want to leak variables
+# globally nor inside different objects.
+# ksh93 does not support this, in its case leaking a variable causes to leak
+# it globally and still not being visible from frames that declared this
+# variable as local.
+
+class Foo \
+  a       \
+  _set_obj_a_0
+
+Foo_set_obj_a_0() {
+  printf %s "$a"
+  "$1"_a_is 0
+  printf %s "$a"
+}
+
+# first check the value does not leak in the global frame
+test_value=1
+unset a
+# Setting from constructor, if it doesn't have an init it shouldn't matter, but
+# checking just in case
+Foo foo "$test_value"
+assert_out printf %s "$a" -- ''
+
+# Actual setter
+test_value=2
+foo_a_is "$test_value"
+assert_out printf %s "$a" -- ''
+
+assert_out foo_a -- "$test_value" # sanity check
+
+# Check actual setter frame leaking works
+if [ -z "$KSH_VERSION" ]; then
+  assert_out foo_set_obj_a_0 foo -- "$test_value"'0'
+  assert_out foo_a -- 0 # sanity check
+  assert_out printf %s "$a" -- ''
+fi
+
+other_test_value=3
+Foo other_foo "$other_test_value"
+test_value=5
+foo_a_is "$test_value"
+assert_out other_foo_a -- "$other_test_value" # sanity check
+# modify other_foo's a attr from foo's method, a should not be leaked
+assert_out foo_set_obj_a_0 other_foo -- "$test_value$test_value"
+assert_out other_foo_a -- 0 # sanity check
 
 end_tests
