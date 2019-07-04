@@ -148,8 +148,10 @@ assert_out mylist_print -- 'deffoomno
 '
 # When IFS is unset the default should be space
 unset IFS
-assert_out mylist_print -- 'def foo mno 
+if [ -z "${IFS+x}" ]; then # ksh93 refuses to really unset it
+  assert_out mylist_print -- 'def foo mno 
 '
+fi
 IFS="$OLD_IFS"
 
 # Append multiple values

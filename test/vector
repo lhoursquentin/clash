@@ -120,8 +120,10 @@ assert_out myvector_print -- 'deffoomno
 '
 # When IFS is unset the default should be space
 unset IFS
-assert_out myvector_print -- 'def foo mno 
+if [ -z "${IFS+x}" ]; then # ksh93 refuses to really unset it
+  assert_out myvector_print -- 'def foo mno 
 '
+fi
 IFS="$OLD_IFS"
 
 # Append multiple values
