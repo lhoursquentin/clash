@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. "${CLASH_ROOT-.}"/clash || exit
+
 . "${CLASH_ROOT-.}"/test/testlib/test_suite || exit
 
 check_equals_1() {

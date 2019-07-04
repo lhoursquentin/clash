@@ -5,7 +5,6 @@ if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
   exit 1
 fi >&2
 
-. "${CLASH_ROOT-.}"/clash
 . "${CLASH_ROOT-.}"/lib/list || exit
 
 class Test              \
