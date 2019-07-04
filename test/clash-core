@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# TODO
+# - IFS tamper
+# - basic tests (example like)
+# - include remaining non-versioned tests
+# - setattr/getattr
+# - del + __del__
+# - __init__
+
 # clash core tests
 
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
@@ -165,11 +173,25 @@ assert_out printf %s "$a" -- ''
 assert_out foo_a -- "$test_value" # sanity check
 
 # Check actual setter frame leaking works
-if [ -z "$KSH_VERSION" ]; then
+check_frame_leak() {
   assert_out foo_set_obj_a_0 foo -- "$test_value"'0'
   assert_out foo_a -- 0 # sanity check
   assert_out printf %s "$a" -- ''
-fi
+}
+
+case "$KSH_VERSION" in
+   # mksh typeset works exactly like the usual local, even with the non-posix
+   # function declaration style
+  *MIRBSD*)
+    check_frame_leak
+    ;;
+  *93*)
+    : # do not test this for ksh93
+    ;;
+  *)
+    check_frame_leak
+    ;;
+esac
 
 other_test_value=3
 Foo other_foo "$other_test_value"

@@ -5,8 +5,6 @@ if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
   exit 1
 fi >&2
 
-. "${CLASH_ROOT-.}"/clash
-
 # TODO could save some iterations by making use of the double link properties
 
 # List_node is also used by dict
@@ -60,7 +58,7 @@ get_positive_index() {
 }
 
 List_append() {
-  "$local" node_id
+  local node_id
   for value do
     node_id="$(List_node_anonymous_id)"
     List_node "$node_id" "$value"
@@ -83,12 +81,12 @@ List_clear() {
 }
 
 List_filter() {
-  "$local" new_list="$1"
+  local new_list="$1"
   shift
   List "$new_list"
-  "$local" index=0
-  "$local" node="$head_"
-  "$local" node_value
+  local index=0
+  local node="$head_"
+  local node_value
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
@@ -102,9 +100,9 @@ List_filter() {
 
 # Find a value matching a given predicate
 List_find() {
-  "$local" index=0
-  "$local" node="$head_"
-  "$local" node_value
+  local index=0
+  local node="$head_"
+  local node_value
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
@@ -119,9 +117,9 @@ List_find() {
 }
 
 List_foreach() {
-  "$local" index=0
-  "$local" node="$head_"
-  "$local" node_value
+  local index=0
+  local node="$head_"
+  local node_value
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
@@ -133,7 +131,7 @@ List_foreach() {
 
 List_get() {
   check_index_within_range "$1" "$length_" || return
-  "$local" target_index="$(get_positive_index "$1")"
+  local target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do
@@ -163,7 +161,7 @@ List_index() {
 
 List_insert() {
   check_index_within_range "$1" "$((length_ + 1))" || return
-  "$local" target_index="$(get_positive_index "$1")"
+  local target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   prev_node=
@@ -172,7 +170,7 @@ List_insert() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  "$local" node_id="$(List_node_anonymous_id)"
+  local node_id="$(List_node_anonymous_id)"
   List_node "$node_id" "$2" "$node" "$prev_node"
   if [ -n "$prev_node" ]; then
     "$prev_node"_next_is "$node_id"
@@ -190,13 +188,13 @@ List_is_empty() {
 }
 
 List_map() {
-  "$local" new_list="$1"
+  local new_list="$1"
   shift
   List "$new_list"
-  "$local" index=0
-  "$local" node="$head_"
-  "$local" node_value
-  "$local" new_value
+  local index=0
+  local node="$head_"
+  local node_value
+  local new_value
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
@@ -211,7 +209,7 @@ List_map() {
 List_pop() {
   set -- "${1-0}"
   check_index_within_range "$1" "$length_" || return
-  "$local" target_index="$(get_positive_index "$1")"
+  local target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do
@@ -255,18 +253,18 @@ List_pretty_print() {
 List_print() {
   (
     node_printer() {
-      "$local" OLD_PATH="$PATH"
+      local OLD_PATH="$PATH"
       PATH=
       if ! PATH="$OLD_PATH" "$1"_print 2> /dev/null; then
         PATH="$OLD_PATH"
         printf '%s' "$1"
       fi
       PATH="$OLD_PATH"
-      "$local" delim=
+      local delim=
       if [ -z "${IFS+x}" ]; then
         delim=' ' # space delimiter if IFS is unset
       elif [ -n "$IFS" ]; then
-        "$local" tmp="${IFS#?}"
+        local tmp="${IFS#?}"
         delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
       fi
       printf %s "$delim"
@@ -282,10 +280,10 @@ List_reduce() {
     return 1
   fi >&2
 
-  "$local" node_value="$("$head_"_value; printf x)"
-  "$local" accumulated_value="${node_value%x}"
-  "$local" node="$("$head_"_next)"
-  "$local" index=1
+  local node_value="$("$head_"_value; printf x)"
+  local accumulated_value="${node_value%x}"
+  local node="$("$head_"_next)"
+  local index=1
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
@@ -327,7 +325,7 @@ List_remove() {
 
 List_set() {
   check_index_within_range "$1" "$length_" || return
-  "$local" target_index="$(get_positive_index "$1")"
+  local target_index="$(get_positive_index "$1")"
   index=0
   node="$head_"
   while [ "$index" -lt "$target_index" ]; do

@@ -1,11 +1,12 @@
 #!/bin/sh
 
-if ! [ -f "${CLASH_ROOT-.}"/lib/list ]; then
-  echo 'Could not locate lib/list'
+if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
+  echo 'Could not locate clash'
   exit 1
 fi >&2
 
-. "${CLASH_ROOT-.}"/lib/list
+. "${CLASH_ROOT-.}"/clash
+. "${CLASH_ROOT-.}"/lib/list || exit
 
 class Test              \
   checker_list_         \
@@ -103,9 +104,9 @@ Test_check_ret_not_equal() {
 }
 
 Test__init__() {
-  "$local" cmd_list_id="$(List_anonymous_id)"
+  local cmd_list_id="$(List_anonymous_id)"
   List "$cmd_list_id" "$@"
-  "$local" checker_list_id="$(List_anonymous_id)"
+  local checker_list_id="$(List_anonymous_id)"
   List "$checker_list_id"
   "$self"_checker_list__is "$checker_list_id"
   "$self"_cmd_list__is "$cmd_list_id"
@@ -130,9 +131,9 @@ Test_check_failed_() {
 }
 
 Test_run() {
-  "$local" index=0
-  "$local" node="$("$cmd_list_"_head_)"
-  "$local" node_value
+  local index=0
+  local node="$("$cmd_list_"_head_)"
+  local node_value
   while [ "$index" -lt "$("$cmd_list_"_length_)" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
@@ -165,7 +166,7 @@ class Test_suite  \
   __init__        \
 
 Test_suite__init__() {
-  "$local" test_list_id="$(List_anonymous_id)"
+  local test_list_id="$(List_anonymous_id)"
   List "$test_list_id"
   "$self"_tests__is "$test_list_id"
 }
@@ -175,7 +176,7 @@ Test_suite_add() {
 }
 
 Test_suite_add_quick_test() {
-  "$local" test_id="$(Test_anonymous_id)"
+  local test_id="$(Test_anonymous_id)"
   Test "$test_id" "$@"
   "$tests_"_append "$test_id"
 }

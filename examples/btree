@@ -23,9 +23,9 @@ Btree_find_value() {
 
 # external function example, using generated getters
 find_value() {
-  "$local" value="$("$1"_value)"
-  "$local" left="$("$1"_left)"
-  "$local" right="$("$1"_right)"
+  local value="$("$1"_value)"
+  local left="$("$1"_left)"
+  local right="$("$1"_right)"
   printf 'Visiting node %s (%s)\n' "$1" "$value"
   shift
   if [ "$1" -eq "$value" ]; then

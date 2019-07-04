@@ -2,6 +2,8 @@
 
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
 
+. "${CLASH_ROOT-.}"/clash || exit
+
 . "${CLASH_ROOT-.}"/lib/list || exit
 
 # List creation

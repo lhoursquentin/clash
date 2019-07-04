@@ -1,5 +1,6 @@
 #!/usr/bin/env -S -i bash
 
+. "${CLASH_ROOT-.}"/clash || exit
 . "${CLASH_ROOT-.}"/lib/list || exit
 
 List foobar 1 2 3

@@ -1,13 +1,115 @@
 #!/bin/sh
 
-if [ -z "$KSH_VERSION" ]; then
-  local=local
-  func_suffix='()'
+if "${__clash_compat_second_pass-false}"; then
+  unset __clash_compat_second_pass
+  if ! __clash_compat_alias 2> /dev/null; then
+    echo 'Unsupported shell, please file a bug' >&2
+    exit 1
+  fi
+  unalias __clash_compat_alias
 else
-  # ksh93 needs the `function x {` syntax for typeset to act as local
-  func_prefix='function '
-  local=typeset
+  __clash_compat_test_var=g
+  __clash_compat_test_var_local_assigned=false
+  __clash_compat_local_supported=false
+  __clash_compat_typeset_supported=false
+
+  func_suffix='()'
+
+  __clash_compat_test() {
+    if (
+        set +e; unset -f f; a=false
+        f() { local a=true && "$a"; }
+        f
+      )
+    then
+      local __clash_compat_test_var=l
+      __clash_compat_local_supported=true
+    elif (
+        set +e; unset -f f; a=false
+        f() { typeset a=true && "$a"; }
+        f
+      )
+    then
+      alias local=typeset
+      typeset __clash_compat_test_var=l
+      __clash_compat_typeset_supported=true
+    elif (
+        set +e; unset -f f; a=false
+        f() { declare a=true && "$a"; }
+        f
+      )
+    then
+      alias local=declare
+      declare __clash_compat_test_var=l
+    fi 2> /dev/null
+
+    if [ "$__clash_compat_test_var" = l ]; then
+      __clash_compat_test_var_local_assigned=true
+    fi
+  }
+
+  __clash_compat_test
+  unset -f __clash_compat_test
+
+  if ! "$__clash_compat_test_var_local_assigned"; then # total failure
+    alias local=
+  elif [ "$__clash_compat_test_var" = l ]; then
+    # "local" keywords worked but local value has leaked to the global scope, the
+    # only "common" posix shell that does this is ksh93
+    if ! "$__clash_compat_typeset_supported"; then
+      alias local=
+    elif (
+        set +e; unset -f f; a=false
+        # shells not supporting this keyword will crash if not using eval
+        eval 'function f { typeset a=true && "$a"; }'
+        f && ! "$a"
+      )
+    then
+      func_prefix='function '
+      unset func_suffix
+    else
+      # if typeset is valid but does not allow the variable to be local in any
+      # way then we might as well not use it at all
+      alias local=
+    fi 2> /dev/null
+  fi
+
+  # If local is not supported then test aliases work correctly
+  if ! "$__clash_compat_local_supported"; then
+    if ! alias __clash_compat_alias=true; then
+      echo 'Unsupported shell: no support for alias, please file a bug' >&2
+      exit 1
+    fi 2> /dev/null
+
+    # Some shells such as bash disable alias expansion for non-interactive.
+    # shopt is bash specific and bash supports local, this is for weird bash
+    # clones.
+    command -v shopt && shopt -s expand_aliases 2> /dev/null
+
+    if ! __clash_compat_alias 2> /dev/null
+    then
+      # Some shells (notably ksh93) do not have aliases applied instantly when
+      # sourcing a file.
+      # From the ksh manual:
+      # > `. file' reads whole file before any commands are executed. Therefore,
+      # > alias and unalias commands in the file will not apply to any commands
+      # > defined in the file.
+      #
+      # In that case we'll just source the same file once, this avoids having to
+      # split clash core into multiple files.
+      __clash_compat_second_pass=true
+      . "${CLASH_ROOT-.}"/clash
+      return
+    fi
+    unalias __clash_compat_alias
+  fi
 fi
+
+unset __clash_compat_test_var
+unset __clash_compat_test_var_local_assigned
+unset __clash_compat_local_supported
+unset __clash_compat_typeset_supported
+unset __clash_compat_second_pass
 
 quote() {
   input="${1?}"
@@ -34,26 +136,26 @@ del() {
 }
 
 class() {
-  "$local" name="$1"
+  local name="$1"
   shift
-  "$local" attr_defs=
-  "$local" attr_methods_defs=
-  "$local" method_defs=
-  "$local" constructor_attr_defs=
-  "$local" delete_fn=
-  "$local" class_body='
+  local attr_defs=
+  local attr_methods_defs=
+  local method_defs=
+  local constructor_attr_defs=
+  local delete_fn=
+  local class_body='
     '"$func_prefix$name"'_anonymous_id'"$func_suffix"' {
       printf %s _'"$name"'_anonymous_id_"${_'"$name"'_anonymous_id_count-0}"
     }
 
     '"$func_prefix$name$func_suffix"' {
       _'"$name"'_anonymous_id_count="$((_'"$name"'_anonymous_id_count + 1))"'
-  "$local" attr_index=2
-  "$local" nb_args="$#"
-  "$local" __del__=false
-  "$local" __getattr__=false
-  "$local" __init__=false
-  "$local" __setattr__=false
+  local attr_index=2
+  local nb_args="$#"
+  local __del__=false
+  local __getattr__=false
+  local __init__=false
+  local __setattr__=false
   for arg do
     case "$arg" in
        __del__     \
@@ -61,7 +163,7 @@ class() {
       |__init__    \
       |__setattr__ \
       )
-        "$local" "$arg"=true
+        local "$arg"=true
         ;;
     esac
   done
@@ -76,7 +178,7 @@ class() {
         case "$1" in
           *_)
             constructor_attr_defs="$constructor_attr_defs"'
-      '"$local"' '"$1"'='
+      local '"$1"'='
             attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {'
             if "$__getattr__"; then
@@ -93,9 +195,9 @@ class() {
             ;;
           *)
             constructor_attr_defs="$constructor_attr_defs"'
-      '"$local"' '"$1"'="${'"$attr_index"'}"'
+      local '"$1"'="${'"$attr_index"'}"'
             attr_methods_defs="$attr_methods_defs"'
-      '"$local"' _tmp_getter="${'"$attr_index"'}"
+      local _tmp_getter="${'"$attr_index"'}"
       case "${'"$attr_index"'}" in
         *"'"'"'"*)
           _tmp_getter="$(quote "${'"$attr_index"'}"; printf x)"
@@ -126,7 +228,7 @@ class() {
         if [ "$self" = '"'"'"$1"'"'"' ]; then
           '"$1"'="$1"
         fi
-        '"$local"' _tmp_getter="$1"
+        local _tmp_getter="$1"
         case "$1" in
           *"'"'"'"'"'"'"'"'"'"*)
             _tmp_getter="$(quote "$1"; printf x)"
@@ -138,7 +240,7 @@ class() {
         }'"'"'"'"'"'"'"'"'
       }'"'"
         attr_defs="$attr_defs"'
-          '"$local"' '"$1"'="$('"'"'"$1"'"'"''"_$1"'; printf x)"
+          local '"$1"'="$('"'"'"$1"'"'"''"_$1"'; printf x)"
           '"$1"'="${'"$1"'%x}"'
         attr_index="$((attr_index + 1))"
         ;;
@@ -150,11 +252,11 @@ class() {
         if [ -z "$_upper_object_id" ] ||
            [ "$_upper_object_id" != '"'"'"$1"'"'"' ]
         then
-          '"$local"' __allow_getattr=false
+          local __allow_getattr=false
           '"$attr_defs"'
           unset __allow_getattr
-          '"$local"' self='"'"'"$1"'"'"'
-          '"$local"' _upper_object_id='"'"'"$1"'"'"'
+          local self='"'"'"$1"'"'"'
+          local _upper_object_id='"'"'"$1"'"'"'
         fi'
   for method do
     delete_fn="$delete_fn"'
@@ -180,7 +282,7 @@ class() {
 
   if "$__init__"; then
     class_body="$class_body"'
-      '"$local"' self="$1"
+      local self="$1"
       '"$constructor_attr_defs"'
       shift
       '"$name"'__init__ "$@"'
