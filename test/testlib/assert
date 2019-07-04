@@ -39,7 +39,7 @@ assert() {
   } >&2
   failed_assertions="$failed_assertions
 $assertion
-$(printf '\e[1;34m-------------------------------------\e[0m')"
+$(printf '\033[1;34m-------------------------------------\033[0m')"
   return 1
 }
 
@@ -70,11 +70,11 @@ assert_out() {
 }
 
 end_tests() {
-  printf '\e[1m================ END ================\e[0m\n'
+  printf '\033[1m================ END ================\033[0m\n'
   if [ -z "$failed_assertions" ]; then
-    printf '\e[1;32mPASS\e[0m\n'
+    printf '\033[1;32mPASS\033[0m\n'
   else
-    printf '%s\n\e[1;31mFAIL\e[0m\n' "$failed_assertions"
+    printf '%s\n\033[1;31mFAIL\033[0m\n' "$failed_assertions"
     return 1
   fi
 }
