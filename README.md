@@ -2,20 +2,10 @@
 Portable shell oriented-object programming
 
 # What
-Define classes and instanciate objects in shell with the usual shell functions syntax.
+Define classes and instanciate objects in shell with the usual shell functions
+syntax.
 
-Compatible with most Bourne like shells
-
-| Shell    | Versions tested           | Support                          |
-| -------- | ------------------------- | -------------------------------- |
-| bash     | 3.0 / 4.4 / 5.0           | Full                             |
-| busybox  | 1.28 (ash w/ bash compat) | Full                             |
-| dash     | 0.5.10.2                  | Full                             |
-| ksh      | AT&T 93u+ (2012)          | Full                             |
-| mksh     | R57                       | Full                             |
-| osh      | 0.6.0                     | Full                             |
-| yash     | 2.48                      | Full                             |
-| zsh      | 5.6.2                     | Full                             |
+Compatible with most Bourne like shells like bash/dash/ksh/zsh
 
 ## Features
 
@@ -33,6 +23,28 @@ What you would expect from basic object-oriented programming is supported:
 Not supported:
 
 - inheritance
+
+## Compatibility
+
+Most modern shell builtin high level constructs such as local variables, arrays,
+dictionaries and such are not defined by
+[POSIX](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html)
+and usually differ in behavior and syntax between different shells.
+
+Portability is at the core of this project, there is a minimal use of non
+POSIX features, allowing most of the code to be highly portable between many
+different shells.
+
+| Shell                                                     | Version(s) tested         | Support              |
+| --------------------------------------------------------- | ------------------------- | -------------------- |
+| [bash](https://www.gnu.org/software/bash)                 | 3.0 / 4.4 / 5.0           | Full                 |
+| [busybox](https://busybox.net)                            | 1.28 (ash w/ bash compat) | Full                 |
+| [dash](https://en.wikipedia.org/wiki/Almquist_shell#dash) | 0.5.10.2                  | Full                 |
+| [ksh](https://en.wikipedia.org/wiki/KornShell)            | AT&T 93u+ (2012)          | clash 100%, lib 50%  |
+| [mksh](http://www.mirbsd.org/mksh.htm)                    | R57                       | Full                 |
+| [osh](https://www.oilshell.org)                           | 0.6.0                     | Full                 |
+| [yash](https://yash.osdn.jp)                              | 2.48                      | Full                 |
+| [zsh](https://www.zsh.org/)                               | 5.6.2                     | Full                 |
 
 ## How to use
 ```bash
