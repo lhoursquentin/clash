@@ -84,7 +84,7 @@ else
     # Some shells such as bash disable alias expansion for non-interactive.
     # shopt is bash specific and bash supports local, this is for weird bash
     # clones.
-    command -v shopt && shopt -s expand_aliases 2> /dev/null
+    command -v shopt > /dev/null && shopt -s expand_aliases 2> /dev/null
 
     if ! __clash_compat_alias 2> /dev/null
     then
