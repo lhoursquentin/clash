@@ -136,7 +136,6 @@ Vector_index() {
 Vector_insert() {
   check_index_within_range "$1" "$((length_ + 1))" || return
   local target_index="$(get_positive_index "$1")"
-  local value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   "$self"_shift_right_ "$target_index"
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
