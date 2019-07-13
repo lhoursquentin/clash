@@ -1,13 +1,5 @@
 #!/bin/sh
 
-# TODO
-# - IFS tamper
-# - basic tests (example like)
-# - include remaining non-versioned tests
-# - setattr/getattr
-# - del + __del__
-# - __init__
-
 # clash core tests
 
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
@@ -251,6 +243,25 @@ assert_out "$obj_name"_d -- "$arg3"
 "$obj_name"__init__ "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
 assert_true "$constructed" -- 'Failed to call class __init__'
 
-del foo
+del "$obj_name"
+
+class Foo  \
+  a        \
+  c_       \
+  b        \
+  _m       \
+  d        \
+
+constructed=false
+# Previous test Foo__init__ still exist, check is isn't called
+Foo "$obj_name" "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
+assert_false "$constructed" -- '__init__ method should not exist'
+
+assert_out "$obj_name"_a -- "$arg1"
+assert_out "$obj_name"_b -- "$arg2"
+assert_out "$obj_name"_c_ -- ''
+assert_out "$obj_name"_d -- "$arg3"
+
+del "$obj_name"
 
 end_tests
