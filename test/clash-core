@@ -264,4 +264,51 @@ assert_out "$obj_name"_d -- "$arg3"
 
 del "$obj_name"
 
+# ===============================
+# Destruction + custom additional destructor __del__
+
+# Basic deletion
+D=class_delete
+method_name=method
+
+set -- foo bar_ baz _"$method_name" zoo
+
+eval "$D"_"$method_name"'() { :; }'
+
+class "$D" "$@"
+
+obj_name=instance_to_delete
+
+"$D" "$obj_name" a b c
+
+for assert_type in true false; do
+  for arg do
+    case "$arg" in
+      _*)
+        assert_"$assert_type" "$obj_name$arg" -- 'Fail to create/del method'
+        ;;
+      *)
+        assert_"$assert_type" "$obj_name"_"$arg" -- 'Fail to create/del getter'
+        assert_"$assert_type" "$obj_name"_"$arg"_is x -- 'Fail to create/del setter'
+        ;;
+    esac
+  done
+  # second call should fail since internal_del function has been deleted
+  assert_"$assert_type" del "$obj_name" -- 'del failed'
+done
+
+# __del__ hook
+class Foo a __del__
+
+Foo__del__() { printf 'calling hook for %s' "$self"; }
+
+Foo f 1
+
+assert_out f_a -- 1 # sanity check
+# just check the hook has its own classic method
+assert_out f__del__ -- 'calling hook for f'
+
+assert_out del f -- 'calling hook for f'
+assert_false f_a -- 'Getter should have been deleted' # sanity check
+
 end_tests
