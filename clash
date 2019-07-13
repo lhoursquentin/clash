@@ -215,6 +215,7 @@ class() {
             attr_methods_defs="$attr_methods_defs"'
         printf %s '"'"'"'"'"'""$_tmp_getter""'"'"'"'"'"'
       }'"'"
+            attr_index="$((attr_index + 1))"
             ;;
         esac
         delete_fn="$delete_fn"'
@@ -243,7 +244,6 @@ class() {
         attr_defs="$attr_defs"'
           local '"$1"'="$('"'"'"$1"'"'"''"_$1"'; printf x)"
           '"$1"'="${'"$1"'%x}"'
-        attr_index="$((attr_index + 1))"
         ;;
     esac
     nb_args="$((nb_args - 1))"
