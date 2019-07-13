@@ -202,4 +202,55 @@ assert_out other_foo_a -- "$other_test_value" # sanity check
 assert_out foo_set_obj_a_0 other_foo -- "$test_value$test_value"
 assert_out other_foo_a -- 0 # sanity check
 
+del foo
+del other_foo
+
+# ===============================
+# General object construction + __init__
+
+class Foo  \
+  a        \
+  c_       \
+  b        \
+  __init__ \
+  _m       \
+  d        \
+
+Foo__init__() {
+  assert_true [ "$#" -eq 6 ] -- 'incorrect nb args'
+  assert_true [ "$self" = "$obj_name" ] -- 'failed to set self'
+  assert_out "$self"_a -- "$arg1"
+  assert_out "$self"_b -- "$arg2"
+  assert_out "$self"_c_ -- ''
+  assert_out "$self"_d -- "$arg3"
+  assert_true [ "$1" = "$arg1" ] -- 'Incorrect arg'
+  assert_true [ "$2" = "$arg2" ] -- 'Incorrect arg'
+  assert_true [ "$3" = "$arg3" ] -- 'Incorrect arg'
+  assert_true [ "$4" = "$arg4" ] -- 'Incorrect arg'
+  assert_true [ "$5" = "$arg5" ] -- 'Incorrect arg'
+  constructed=true
+}
+
+arg1=1
+arg2=2
+arg3=3
+arg4=4
+arg5=5
+arg6=6
+obj_name=foo
+constructed=false
+
+Foo "$obj_name" "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
+assert_true "$constructed" -- 'Failed to call class __init__'
+constructed=false
+
+assert_out "$obj_name"_a -- "$arg1"
+assert_out "$obj_name"_b -- "$arg2"
+assert_out "$obj_name"_c_ -- ''
+assert_out "$obj_name"_d -- "$arg3"
+"$obj_name"__init__ "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
+assert_true "$constructed" -- 'Failed to call class __init__'
+
+del foo
+
 end_tests
