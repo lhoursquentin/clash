@@ -132,7 +132,9 @@ quote() {
 }
 
 del() {
-  __internal_del__"$1"
+  __internal_del__"$1" 2> /dev/null || return
+  # unsetting a function from itself does not do anything in ksh93
+  unset -f __internal_del__"$1"
 }
 
 class() {
@@ -273,7 +275,6 @@ class() {
   fi
   delete_fn='eval '"$func_prefix"'__internal_del__"$1"'"'"''"$func_suffix"' {
         '"$delete_fn"'
-        unset -f __internal_del__'"'"'"$1"'"'"'
       }'"'"'
   '
   class_body="$class_body"'
