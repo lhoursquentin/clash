@@ -311,4 +311,37 @@ assert_out f__del__ -- 'calling hook for f'
 assert_out del f -- 'calling hook for f'
 assert_false f_a -- 'Getter should have been deleted' # sanity check
 
+# ===============================
+# __getattr__
+
+arg1=a
+arg1_val=1
+arg2=b
+arg2_val=2
+arg3=c_
+arg3_val=
+
+class Foo "$arg1" __getattr__ "$arg2" "$arg3"
+
+Foo__getattr__() {
+  printf 'Getting %s - ' "$1"
+}
+
+Foo foo "$arg1_val" "$arg2_val"
+
+assert_out foo_"$arg1" -- "Getting $arg1 - $arg1_val"
+assert_out foo_"$arg2" -- "Getting $arg2 - $arg2_val"
+assert_out foo_"$arg3" -- "Getting $arg3 - $arg3_val"
+
+arg1_val=10
+foo_"$arg1"_is "$arg1_val"
+arg2_val=20
+foo_"$arg2"_is "$arg2_val"
+arg3_val=30
+foo_"$arg3"_is "$arg3_val"
+
+assert_out foo_"$arg1" -- "Getting $arg1 - $arg1_val"
+assert_out foo_"$arg2" -- "Getting $arg2 - $arg2_val"
+assert_out foo_"$arg3" -- "Getting $arg3 - $arg3_val"
+
 end_tests
