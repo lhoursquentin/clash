@@ -239,7 +239,14 @@ class() {
             _tmp_getter="${_tmp_getter%x}"
             ;;
         esac
-        eval '"$func_prefix"''"'"'"$1"'"'_$1'"'"'"'"'"'"'"''"$func_suffix"' {
+        eval '"$func_prefix"''"'"'"$1"'"'_$1'"'"'"'"'"'"'"''"$func_suffix"' {'
+        if "$__getattr__"; then
+          attr_methods_defs="$attr_methods_defs"'
+        if "${__allow_getattr:-true}"; then
+          '"'"'"$1"'"'"'__getattr__ '"$1"'
+        fi'
+        fi
+        attr_methods_defs="$attr_methods_defs"'
           printf %s '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$_tmp_getter"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
         }'"'"'"'"'"'"'"'"'
       }'"'"
