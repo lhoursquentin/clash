@@ -258,11 +258,18 @@ class() {
     nb_args="$((nb_args - 1))"
     shift
   done
+
+  # allow_getattr is not local to avoid ksh recursion with a `function` defined
+  # function, which leads to an infinite recursion since they do not share local
+  # variables.
+  # Not using local should be safe in this case since we only fetch the attr
+  # values between setting and unsetting it, there should be no down or up frame
+  # modification of this var.
   attr_defs='
         if [ -z "$_upper_object_id" ] ||
            [ "$_upper_object_id" != '"'"'"$1"'"'"' ]
         then
-          local __allow_getattr=false
+          __allow_getattr=false
           '"$attr_defs"'
           unset __allow_getattr
           local self='"'"'"$1"'"'"'
