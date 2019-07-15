@@ -327,7 +327,8 @@ Foo__getattr__() {
   printf 'Getting %s - ' "$1"
 }
 
-Foo foo "$arg1_val" "$arg2_val"
+# nothing should be printed during object construction
+assert_out Foo foo "$arg1_val" "$arg2_val" -- ''
 
 assert_out foo_"$arg1" -- "Getting $arg1 - $arg1_val"
 assert_out foo_"$arg2" -- "Getting $arg2 - $arg2_val"
@@ -343,5 +344,30 @@ foo_"$arg3"_is "$arg3_val"
 assert_out foo_"$arg1" -- "Getting $arg1 - $arg1_val"
 assert_out foo_"$arg2" -- "Getting $arg2 - $arg2_val"
 assert_out foo_"$arg3" -- "Getting $arg3 - $arg3_val"
+
+# ===============================
+# __setattr__
+
+class Foo "$arg1" __setattr__ "$arg2" "$arg3"
+
+Foo__setattr__() {
+  [ "$#" -eq 2 ] || return
+  printf 'Setting %s to %s' "$1" "$2"
+}
+
+# nothing should be printed during object construction
+assert_out Foo foo "$arg1_val" "$arg2_val" -- ''
+
+arg1_val=100
+assert_out foo_"$arg1"_is "$arg1_val" -- "Setting $arg1 to $arg1_val"
+assert_out foo_"$arg1" -- "$arg1_val" # sanity check
+arg2_val=200
+assert_out foo_"$arg2"_is "$arg2_val" -- "Setting $arg2 to $arg2_val"
+assert_out foo_"$arg2" -- "$arg2_val" # sanity check
+arg3_val=300
+assert_out foo_"$arg3"_is "$arg3_val" -- "Setting $arg3 to $arg3_val"
+assert_out foo_"$arg3" -- "$arg3_val" # sanity check
+
+del foo
 
 end_tests
