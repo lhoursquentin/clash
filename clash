@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# shebang for coloration, this should only be sourced
+
 if "${__clash_compat_second_pass-false}"; then
   unset __clash_compat_second_pass
   if ! __clash_compat_alias 2> /dev/null; then

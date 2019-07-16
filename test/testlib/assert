@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# shebang for coloration, this should only be sourced
+
 condition()
 {
   nb_args="$#"
@@ -62,11 +64,9 @@ assert_out() {
   shift "$((separator_index + 1))"
   output="$(cat "$out_file"; printf x)"
   output="${output%x}"
+  rm "$out_file"
   assert_operator='='
   assert [ "$output" = "$*" ] -- 'Output differ'
-  ret="$?"
-  rm "$out_file"
-  return "$ret"
 }
 
 end_tests() {

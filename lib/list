@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# shebang for coloration, this should only be sourced
+
 if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
   echo 'Could not locate clash'
   exit 1
