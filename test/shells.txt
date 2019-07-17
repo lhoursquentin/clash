@@ -1,0 +1,10 @@
+bash
+bash --posix
+busybox ash
+dash
+ksh
+mksh
+osh
+yash
+zsh
+zsh --emulate sh

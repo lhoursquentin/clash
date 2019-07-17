@@ -1,0 +1,33 @@
+#!/bin/sh
+
+. "${CLASH_ROOT-.}"/clash || exit
+
+class Foo  \
+  arg1     \
+  arg2     \
+  arg3     \
+  arg4     \
+  _method1 \
+  _method2 \
+  _method3 \
+  _method4 \
+  __init__ \
+
+Foo__init__() {
+  :
+}
+
+# to allow zsh to split seq
+command -v setopt > /dev/null && setopt SH_WORD_SPLIT
+
+nb="${1-10000}"
+chunk=1000
+sub_seq="$(seq "$chunk")"
+for i in $(seq "$((nb / chunk))"); do
+  begin="$(date +%s)"
+  for j in $sub_seq; do
+    Foo foo"$((i * chunk + j))" 1 2 3 4
+  done
+  end="$(date +%s)"
+  printf '%s -> %s - %ss\n' "$((i * chunk))" "$(( (i + 1) * chunk))" "$((end - begin))"
+done

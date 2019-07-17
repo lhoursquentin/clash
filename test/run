@@ -1,0 +1,20 @@
+#!/bin/sh
+
+. "${CLASH_ROOT-.}"/test/testlib/assert || exit
+
+while IFS= read -r shell; do
+  while IFS= read -r test; do
+    printf '%s %s - ' "$shell" "$test"
+    export TIME="$shell,$test,%e"
+    if assert_true time $shell "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> run.log 2>&1
+    then
+      printf '\033[1;32mOK\033[0m\n'
+    else
+      printf '\033[1;31mKO\033[0m\n'
+    fi
+  done < "${CLASH_ROOT-.}"/test/tests.txt
+  echo
+done < "${CLASH_ROOT-.}"/test/shells.txt
+
+
+end_tests

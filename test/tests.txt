@@ -1,0 +1,3 @@
+tests/core
+tests/lib/list
+tests/lib/vector
