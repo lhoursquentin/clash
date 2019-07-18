@@ -6,7 +6,11 @@ while IFS= read -r shell; do
   while IFS= read -r test; do
     printf '%s %s - ' "$shell" "$test"
     export TIME="$shell,$test,%e"
-    if assert_true time $shell ${errexit+-e} "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> run.log 2>&1
+    OLDIFS="$IFS"
+    IFS=' '
+    set -- $shell ${errexit+-e}
+    IFS="$OLDIFS"
+    if assert_true time "$@" "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> run.log 2>&1
     then
       printf '\033[1;32mOK\033[0m\n'
     else

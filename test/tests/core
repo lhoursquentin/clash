@@ -6,6 +6,11 @@
 
 . "${CLASH_ROOT-.}"/clash || exit
 
+# We'll have most of the ascii table in the IFS, should be good to find unquoted
+# variables
+IFS=' 	
+!"#$%&'"'"'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+
 # =====================================================
 # 1d97012 clash: fix double digit attributes assignment
 
