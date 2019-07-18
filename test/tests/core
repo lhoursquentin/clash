@@ -33,8 +33,13 @@ unset Foo
 class Foo \
   a       \
   b       \
-  c       \
+  c_      \
   _printa \
+  __init__
+
+Foo__init__() {
+  printf %s,%s "$1" "$b" # print positional + attribute
+}
 
 Foo_printa() {
   printf %s "$a"
@@ -54,11 +59,13 @@ attr2='     spaces     '
 attr3='			tabs			'
 
 # check assigment via constructor
-Foo foo "$attr1" "$attr2" "$attr3"
+assert_out Foo foo "$attr1" "$attr2" "$attr3" -- "${attr1},${attr2}"
 
 assert_out foo_a -- "$attr1"
 assert_out foo_b -- "$attr2"
-assert_out foo_c -- "$attr3"
+assert_out foo_c_ -- ''
+
+assert_out foo_printa -- "$attr1"
 
 attr1="    s     $attr1"
 attr2="    s     $attr2"
@@ -68,11 +75,13 @@ attr3="    s     $attr3"
 
 foo_a_is "$attr1"
 foo_b_is "$attr2"
-foo_c_is "$attr3"
+foo_c__is "$attr3"
 
 assert_out foo_a -- "$attr1"
 assert_out foo_b -- "$attr2"
-assert_out foo_c -- "$attr3"
+assert_out foo_c_ -- "$attr3"
+
+assert_out foo_printa -- "$attr1"
 
 # manual check just in case the testlib is the one not preserving whitespaces
 [ "$(foo_a; printf x)" = "$attr1"x ]
@@ -83,14 +92,20 @@ del foo
 # ===============================
 # Check objects can hold single and double quotes strings
 
-assert_true Foo single "a'b" -- 'Failed object creation with single quoted attr'
-assert_out single_a -- "a'b"
-assert_true single_a_is "a'b" -- 'Failed setter with single quoted value'
+attr1="a'b"
+attr2="c'd"
+assert_out Foo single "$attr1" "$attr2" -- "${attr1},${attr2}"
+assert_out single_a -- "$attr1"
+assert_true single_a_is "$attr1" -- 'Failed setter with single quoted value'
+assert_out single_printa -- "$attr1"
 del single
 
-assert_true Foo double 'a"b' -- 'Failed object creation with double quoted attr'
-assert_out double_a -- 'a"b'
-assert_true double_a_is 'a"b' -- 'Failed setter with double quoted value'
+attr1='a"b'
+attr2='c"d'
+assert_true Foo double "$attr1" "$attr2" -- "${attr1},${attr2}"
+assert_out double_a -- "$attr1"
+assert_true double_a_is "$attr1" -- 'Failed setter with double quoted value'
+assert_out double_printa -- "$attr1"
 del double
 
 # ===============================
