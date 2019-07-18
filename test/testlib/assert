@@ -19,12 +19,13 @@ condition()
     shift
   done
   shift "$(($# - separator_index))"
-  "$@"
+  "$@" || return # return for set -e
 }
 
 assert() {
-  condition "$@"
-  if [ "$?" "$assert_operator" 0 ]; then
+  condition_retval=0
+  condition "$@" || condition_retval="$?" # for set -e
+  if [ "$condition_retval" "$assert_operator" 0 ]; then
     return
   fi
 
