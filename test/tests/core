@@ -8,8 +8,9 @@
 
 # We'll have most of the ascii table in the IFS, should be good to find unquoted
 # variables
+# TODO add back the backslash char in the IFS when osh supports it
 IFS=' 	
-!"#$%&'"'"'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+!"#$%&'"'"'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~'
 
 # =====================================================
 # 1d97012 clash: fix double digit attributes assignment
