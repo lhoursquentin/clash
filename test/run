@@ -2,6 +2,7 @@
 
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
 
+: > run.log
 while IFS= read -r shell; do
   while IFS= read -r test; do
     printf '%s %s - ' "$shell" "$test"

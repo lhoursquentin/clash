@@ -2,6 +2,11 @@
 
 # shebang for coloration, this should only be sourced
 
+c_red="$(printf '\033[1;31m')"
+c_green="$(printf '\033[1;32m')"
+c_bold="$(printf '\033[1m')"
+c_reset="$(printf '\033[0m')"
+
 condition()
 {
   nb_args="$#"
@@ -32,17 +37,14 @@ assert() {
   assertion="$*"
   shift "$((separator_index + 1))"
   {
-    if [ -t 2 ]; then
-      printf '\033[1;31mError\033[0m - '
-    else
-      printf 'Error - '
-    fi
+    [ -t 2 ] && color=true || unset color
+    printf '%sError%s - ' "${color+$c_red}" "${color+$c_reset}"
     printf "$@"
     echo
   } >&2
   failed_assertions="$failed_assertions
 $assertion
-$(printf '\033[1;34m-------------------------------------\033[0m')"
+-------------------------------------"
   return 1
 }
 
@@ -71,11 +73,12 @@ assert_out() {
 }
 
 end_tests() {
-  printf '\033[1m================ END ================\033[0m\n'
+  [ -t 1 ] && color=true || unset color
+  printf '%s================ END ================%s\n' "${color+$c_bold}" "${color+$c_reset}"
   if [ -z "$failed_assertions" ]; then
-    printf '\033[1;32mPASS\033[0m\n'
+    printf '%sPASS%s\n' "${color+$c_green}" "${color+$c_reset}"
   else
-    printf '%s\n\033[1;31mFAIL\033[0m\n' "$failed_assertions"
+    printf '%s\n%sFAIL%s\n' "$failed_assertions" "${color+$c_red}" "${color+$c_reset}"
     return 1
   fi
 }
