@@ -21,6 +21,8 @@ class List       \
   tail_          \
   _append        \
   _clear         \
+  _clone         \
+  _concat        \
   _filter        \
   _find          \
   _foreach       \
@@ -80,6 +82,17 @@ List_clear() {
   "$self"_head__is ''
   "$self"_tail__is ''
   "$self"_length__is 0
+}
+
+List_clone() {
+  List "$1"
+  "$self"_foreach "$1"_append
+}
+
+List_concat() {
+  for list do
+    "$list"_foreach "$self"_append
+  done
 }
 
 List_filter() {

@@ -29,6 +29,13 @@ assert_out myvector_index 'mno' -- 4
 assert_out myvector_print -- 'abc def ghi jkl mno 
 '
 
+# Cloning
+assert_true myvector_clone cloned_vector -- 'Failed to clone vector'
+assert_out cloned_vector_print -- 'abc def ghi jkl mno 
+'
+assert_out cloned_vector_length_ -- 5
+del cloned_vector
+
 # Append elt
 assert_true myvector_append 'pql' -- 'Failed to append element'
 assert_out myvector_length_ -- 6
@@ -105,6 +112,19 @@ myvector_set 1 foo
 assert_out myvector_length_ -- 3
 assert_out myvector_print -- 'def foo mno 
 '
+
+# Concat
+Vector first_vector a b c
+Vector second_vector d e f
+Vector third_vector g h i
+assert_true first_vector_concat second_vector third_vector -- 'Failed to concat'
+del second_vector
+del third_vector
+assert_out first_vector_length_ -- 9
+assert_out first_vector_print -- 'a b c d e f g h i 
+'
+
+del first_vector
 
 # Check print uses the first char of the IFS to separate elements
 OLD_IFS="$IFS"
