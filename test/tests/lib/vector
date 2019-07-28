@@ -62,6 +62,7 @@ assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql end
 # Remove middle elt
 assert_out myvector_get 3 -- 'middle'
 assert_true myvector_remove 'middle' -- 'Failed to remove middle element'
+assert_false myvector_remove 'middle' -- 'Element should have been removed'
 assert_out myvector_get 3 -- 'ghi'
 assert_out myvector_length_ -- 8
 assert_out myvector_print -- 'begin abc def ghi jkl mno pql end 
@@ -69,6 +70,7 @@ assert_out myvector_print -- 'begin abc def ghi jkl mno pql end
 
 assert_out myvector_get 0 -- 'begin'
 assert_true myvector_remove 'begin' -- 'Failed to remove head element'
+assert_false myvector_remove 'begin' -- 'Element should have been removed'
 assert_out myvector_get 0 -- 'abc'
 assert_out myvector_length_ -- 7
 assert_out myvector_print -- 'abc def ghi jkl mno pql end 
@@ -77,6 +79,7 @@ assert_out myvector_print -- 'abc def ghi jkl mno pql end
 assert_out myvector_get -1 -- 'end'
 assert_out myvector_get 6 -- 'end'
 assert_true myvector_remove 'end' -- 'Failed to remove tail element'
+assert_false myvector_remove 'end' -- 'Element should have been removed'
 assert_out myvector_length_ -- 6
 assert_out myvector_get -1 -- 'pql'
 assert_out myvector_get 5 -- 'pql'
@@ -231,5 +234,16 @@ baz: 150 km/h
 
 '
 IFS="$OLD_IFS"
+
+# remove_if
+Vector foo a b c d a b c
+assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
+assert_out foo_print -- 'b c d a b c 
+'
+assert_out foo_length_ -- 6
+assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
+assert_out foo_print -- 'b d a b c 
+'
+assert_out foo_length_ -- 5
 
 end_tests

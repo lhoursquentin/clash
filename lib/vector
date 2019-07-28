@@ -29,6 +29,7 @@ class Vector     \
   _print         \
   _reduce        \
   _remove        \
+  _remove_if     \
   _set           \
   _new_node_     \
   _shift_left_   \
@@ -242,8 +243,25 @@ Vector_reduce() {
 }
 
 Vector_remove() {
-  local index="$("$self"_index "$1")" || return
-  "$self"_shift_left_ "$index"
+  if ! "$self"_remove_if test "$1" =; then
+    printf 'Value not found: %s\n' "$1" >&2
+    return 1
+  fi
+}
+
+Vector_remove_if() {
+  local index=0
+  local node_value=
+  while [ "$index" -lt "$length_" ]; do
+    node_value="$("$self"_Vector_node_"$index"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
+      "$self"_shift_left_ "$index"
+      return 0
+    fi
+    index="$((index + 1))"
+  done
+  return 1
 }
 
 Vector_set() {

@@ -36,6 +36,7 @@ class List       \
   _print         \
   _reduce        \
   _remove        \
+  _remove_if     \
   _set           \
   _append_node_  \
   __del__        \
@@ -311,10 +312,20 @@ List_reduce() {
 }
 
 List_remove() {
+  if ! "$self"_remove_if test "$1" =; then
+    printf 'Value not found: %s\n' "$1" >&2
+    return 1
+  fi
+}
+
+List_remove_if() {
   index=0
   node="$head_"
+  local node_value=
   while [ "$index" -lt "$length_" ]; do
-    if [ "$("$node"_value; printf x)" = "$1"x ]; then
+    node_value="$("$node"_value; printf x)"
+    node_value="${node_value%x}"
+    if "$@" "$node_value"; then
       next_node="$("$node"_next)"
       if [ "$node" = "$tail_" ]; then
         "$self"_tail__is "$prev_node"
@@ -334,7 +345,6 @@ List_remove() {
     node="$("$node"_next)"
     index="$((index + 1))"
   done
-  printf 'Value not found: %s\n' "$1" >&2
   return 1
 }
 
