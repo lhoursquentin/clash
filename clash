@@ -114,8 +114,11 @@ unset __clash_compat_typeset_supported
 unset __clash_compat_second_pass
 
 quote() {
-  input="${1?}"
-  output=
+  local input="${1?}"
+  local output=
+  local new_input=
+  local char=
+  local transformed_char=
   while [ -n "$input" ]; do
     new_input="${input#?}"
     char="${input%$new_input}"

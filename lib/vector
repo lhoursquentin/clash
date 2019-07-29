@@ -58,7 +58,7 @@ get_positive_index() {
 }
 
 Vector_append() {
-  local value
+  local value=
   for value do
     "$self"_new_node_ "$value"
   done
@@ -89,7 +89,7 @@ Vector_filter() {
   shift
   Vector "$new_vector"
   local index=0
-  local node_value
+  local node_value=
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
@@ -103,7 +103,7 @@ Vector_filter() {
 # Find a value matching a given predicate
 Vector_find() {
   local index=0
-  local node_value
+  local node_value=
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
@@ -118,7 +118,7 @@ Vector_find() {
 
 Vector_foreach() {
   local index=0
-  local node_value
+  local node_value=
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
@@ -137,7 +137,7 @@ Vector_get() {
 
 Vector_index() {
   local index=0
-  local value
+  local value=
   while [ "$index" -lt "$length_" ]; do
     if [ "$("$self"_Vector_node_"$index"_value; printf x)" = "$1"x ]; then
       printf %s "$index"
@@ -165,8 +165,8 @@ Vector_map() {
   shift
   Vector "$new_vector"
   local index=0
-  local node_value
-  local new_value
+  local node_value=
+  local new_value=
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
@@ -190,7 +190,7 @@ Vector_pop() {
 Vector_pretty_print() {
   printf '== %s == (length: %s)\n' "$self" "$length_"
   local index=0
-  local value
+  local value=
   while [ "$index" -lt "$length_" ]; do
     value="$("$self"_Vector_node_"$index"_value; printf x)"
     value="${value%x}"
@@ -279,7 +279,7 @@ Vector_new_node_() {
 
 Vector_shift_left_() {
   local index="$(($1 + 1))"
-  local value
+  local value=
   while [ "$index" -lt "$length_" ]; do
     value="$("$self"_Vector_node_"$index"_value; printf x)"
     "$self"_Vector_node_"$((index - 1))"_value_is "${value%x}"
@@ -292,7 +292,7 @@ Vector_shift_left_() {
 Vector_shift_right_() {
   local index="$((length_ - 1))"
   local target_index="$1"
-  local value
+  local value=
   "$self"_append ''
   while [ "$index" -ge "$target_index" ]; do
     value="$("$self"_Vector_node_"$index"_value; printf x)"
