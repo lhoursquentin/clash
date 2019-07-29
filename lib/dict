@@ -54,25 +54,20 @@ class Dict       \
   buckets_       \
   hash_function_ \
   last_hashed_   \
+  length_        \
   _clear         \
-  _hash_function \
   _get           \
-  _keys          \
-  _length        \
-  _pop           \
+  _hash_function \
+  _items         \
   _pretty_print  \
+  _remove        \
   _set           \
-  _values        \
   __init__       \
 
-Dict_hash_function() {
-  if "$buckets_"_is_empty; then
-    "$("$self"_last_hashed_)"_stale_is true
-    "$self"_hash_function__is "$1"
-  else
-    echo 'Dict is not empty, cannot change hash function' >&2
-    return 1
-  fi
+Dict_clear() {
+  "$buckets_"_foreach del
+  "$buckets_"_clear
+  "$self"_length__is 0
 }
 
 Dict_get() {
@@ -88,12 +83,7 @@ Dict_get() {
   local tuple
   local tuple_list
   if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
-    tuple="$(
-      matching_tuple() {
-        [ "$("$2"_key; printf x)" = "$1"x ]
-      }
-      "$tuple_list"_find matching_tuple "$1"
-    )"
+    tuple="$("$tuple_list"_find Dict_matching_tuple "$1")"
   then
     local value="$("$tuple"_value; printf x)"
     printf %s "${value%x}"
@@ -101,6 +91,26 @@ Dict_get() {
     printf 'Key not found: %s\n' "$1" >&2
     return 1
   fi
+}
+
+Dict_hash_function() {
+  if [ "$hash_function_" = "$1" ]; then
+    printf 'Nothing to do, hash function already set to: %s\n' "$1" >&2
+    return 0
+  fi
+
+  if "$buckets_"_is_empty; then
+    "$("$self"_last_hashed_)"_stale_is true
+    "$self"_hash_function__is "$1"
+  else
+    echo 'Dict is not empty, cannot change hash function' >&2
+    return 1
+  fi
+}
+
+Dict_items() {
+  List "$1"
+  "$buckets_"_foreach "$1"_concat
 }
 
 Dict_pretty_print() {
@@ -113,6 +123,29 @@ Dict_pretty_print() {
     }
     "$buckets_"_foreach tuple_printer
   )
+}
+
+Dict_remove() {
+  if ! "$("$last_hashed_"_stale)" &&
+     [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
+    local hash_value="$("$last_hashed_"_hash)"
+  else
+    local hash_value="$("$hash_function_" "$1")"
+    "$last_hashed_"_key_is "$1"
+    "$last_hashed_"_hash_is "$hash_value"
+    "$last_hashed_"_stale_is false
+  fi
+  local tuple_list=
+  # TODO: need to cleanup bucket if empty (list does not support removal from
+  # a node yet, this would require a `remove_node' similarly to `append_node')
+  if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
+    "$tuple_list"_remove_if Dict_matching_tuple "$1"
+  then
+    "$self"_length__is "$((length_ - 1))"
+  else
+    printf 'Key not found: %s\n' "$1" >&2
+    return 1
+  fi
 }
 
 Dict_set() {
@@ -131,6 +164,8 @@ Dict_set() {
   local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
   local tuple_id="$(Dict_tuple_anonymous_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
+  "$self"_length__is "$((length_ + 1))"
+  # TODO unset path to avoid extra failed execve
   if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
     "$tuple_list"_append "$tuple_id"
   else
@@ -150,4 +185,10 @@ Dict__init__() {
   "$self"_buckets__is "$list_id"
   # no need to use our wrapper here, the dict will always be empty at this point
   "$self"_hash_function__is dummy_hash
+  "$self"_length__is 0
+}
+
+# "Static" methods
+Dict_matching_tuple() {
+  [ "$("$2"_key; printf x)" = "$1"x ]
 }

@@ -1,0 +1,46 @@
+#!/bin/sh
+
+. "${CLASH_ROOT-.}"/test/testlib/assert || exit
+. "${CLASH_ROOT-.}"/clash || exit
+. "${CLASH_ROOT-.}"/lib/dict || exit
+
+# FIXME missing a bunch of test cases
+
+assert_true Dict mydict -- 'Failed object creation'
+
+assert_true mydict_hash_function dummy_hash -- 'Failed to change hash function'
+assert_true mydict_set 'France' 'Paris' -- 'Failed to insert a new key/value'
+assert_true mydict_hash_function dummy_hash -- 'Setting to the same hash should not fail'
+assert_false mydict_hash_function new_hash -- 'Dict is not empty, this should fail'
+
+assert_true mydict_set 'England' 'London' -- 'Failed to insert a new key/value'
+assert_true mydict_set 'Spain' 'Madrid' -- 'Failed to insert a new key/value'
+assert_true mydict_set 'Canada' 'Ottawa' -- 'Failed to insert a new key/value'
+assert_true mydict_set 'USA' 'Washington' -- 'Failed to insert a new key/value'
+
+assert_out mydict_get 'England' -- 'London'
+assert_out mydict_get 'USA' -- 'Washington'
+assert_out mydict_get 'Spain' -- 'Madrid'
+assert_false mydict_get 'something' -- 'Non-existing key'
+assert_false mydict_get 'a' -- 'Non-existing key'
+
+assert_false mydict_remove 'something' -- 'Removing a non-existing key should fail'
+assert_true mydict_remove 'Spain' -- 'Removal failed'
+assert_false mydict_get 'Spain' -- 'Key should not exist anymore'
+
+# need to verify inserting twice the same key+value has no effect
+assert_out mydict_length_ -- 4
+assert_true mydict_set 'Canada' 'Ottawa' -- 'Setting an already existing value should still return true'
+assert_out mydict_length_ -- 4
+mydict_pretty_print
+
+assert_true mydict_items items -- 'Failed to fetch items'
+assert_out items_print -- '(France, Paris) (England, London) (USA, Washington) (Canada, Ottawa) 
+'
+
+assert_true mydict_clear -- 'Failed to clear'
+assert_out mydict_length_ -- 0
+assert_true mydict_items items -- 'Failed to fetch items'
+assert_true items_is_empty -- 'Items should be empty'
+
+end_tests
