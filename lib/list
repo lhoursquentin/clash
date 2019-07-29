@@ -319,14 +319,15 @@ List_remove() {
 }
 
 List_remove_if() {
-  index=0
-  node="$head_"
+  local index=0
+  local node="$head_"
   local node_value=
+  local prev_node="$head_"
   while [ "$index" -lt "$length_" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
-      next_node="$("$node"_next)"
+      local next_node="$("$node"_next)"
       if [ "$node" = "$tail_" ]; then
         "$self"_tail__is "$prev_node"
         "$prev_node"_next_is ''
