@@ -12,9 +12,9 @@ fi >&2
 dummy_hash() {
   local str="$1"
   local hash_value=0
-  local tmp
-  local char
-  local char_num
+  local tmp=
+  local char=
+  local char_num=
   while [ -n "$str" ]; do
     tmp="$str"
     str="${str#?}"
@@ -80,8 +80,8 @@ Dict_get() {
     "$last_hashed_"_hash_is "$hash_value"
     "$last_hashed_"_stale_is false
   fi
-  local tuple
-  local tuple_list
+  local tuple=
+  local tuple_list=
   if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
     tuple="$("$tuple_list"_find Dict_matching_tuple "$1")"
   then
