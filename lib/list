@@ -39,6 +39,7 @@ class List       \
   _remove_if     \
   _set           \
   _append_node_  \
+  _remove_node_  \
   __del__        \
   __init__       \
 
@@ -329,22 +330,9 @@ List_remove_if() {
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
-      local next_node="$("$node"_next)"
-      if [ "$node" = "$tail_" ]; then
-        "$self"_tail__is "$prev_node"
-        "$prev_node"_next_is ''
-      elif [ "$node" = "$head_" ]; then
-        "$self"_head__is "$next_node"
-        "$next_node"_previous_is ''
-      else
-        "$prev_node"_next_is "$next_node"
-        "$next_node"_previous_is "$prev_node"
-      fi
-      del "$node"
-      "$self"_length__is "$((length_ - 1))"
+      "$self"_remove_node_ "$node"
       return
     fi
-    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
@@ -373,6 +361,25 @@ List_append_node_() {
   fi
   "$self"_tail__is "$1"
   "$self"_length__is "$((length_ + 1))"
+}
+
+List_remove_node_() {
+  if [ "$1" = "$tail_" ]; then
+    local prev_node="$("$1"_previous)"
+    "$self"_tail__is "$prev_node"
+    "$prev_node"_next_is ''
+  elif [ "$1" = "$head_" ]; then
+    local next_node="$("$1"_next)"
+    "$self"_head__is "$next_node"
+    "$next_node"_previous_is ''
+  else
+    local prev_node="$("$1"_previous)"
+    local next_node="$("$1"_next)"
+    "$prev_node"_next_is "$next_node"
+    "$next_node"_previous_is "$prev_node"
+  fi
+  del "$1"
+  "$self"_length__is "$((length_ - 1))"
 }
 
 List__del__() {
