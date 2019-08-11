@@ -136,12 +136,14 @@ Dict_remove() {
     "$last_hashed_"_stale_is false
   fi
   local tuple_list=
-  # TODO: need to cleanup bucket if empty (list does not support removal from
-  # a node yet, this would require a `remove_node' similarly to `append_node')
   if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
     "$tuple_list"_remove_if Dict_matching_tuple "$1"
   then
     "$self"_length__is "$((length_ - 1))"
+    if "$tuple_list"_is_empty; then
+      del "$tuple_list"
+      "$buckets_"_remove_node_ "$self"_node_"$hash_value"_tuple_list
+    fi
   else
     printf 'Key not found: %s\n' "$1" >&2
     return 1

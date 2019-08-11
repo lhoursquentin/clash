@@ -364,19 +364,21 @@ List_append_node_() {
 }
 
 List_remove_node_() {
-  if [ "$1" = "$tail_" ]; then
-    local prev_node="$("$1"_previous)"
-    "$self"_tail__is "$prev_node"
-    "$prev_node"_next_is ''
-  elif [ "$1" = "$head_" ]; then
-    local next_node="$("$1"_next)"
-    "$self"_head__is "$next_node"
-    "$next_node"_previous_is ''
-  else
-    local prev_node="$("$1"_previous)"
-    local next_node="$("$1"_next)"
-    "$prev_node"_next_is "$next_node"
-    "$next_node"_previous_is "$prev_node"
+  if [ "$length_" -gt 1 ]; then
+    if [ "$1" = "$tail_" ]; then
+      local prev_node="$("$1"_previous)"
+      "$self"_tail__is "$prev_node"
+      "$prev_node"_next_is ''
+    elif [ "$1" = "$head_" ]; then
+      local next_node="$("$1"_next)"
+      "$self"_head__is "$next_node"
+      "$next_node"_previous_is ''
+    else
+      local prev_node="$("$1"_previous)"
+      local next_node="$("$1"_next)"
+      "$prev_node"_next_is "$next_node"
+      "$next_node"_previous_is "$prev_node"
+    fi
   fi
   del "$1"
   "$self"_length__is "$((length_ - 1))"
