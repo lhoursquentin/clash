@@ -7,6 +7,8 @@ syntax.
 
 Compatible with most Bourne like shells like bash/dash/ksh/zsh
 
+Basic demo of how **clash** works [here](https://lhoursquentin.github.io/clash-web-demo/)
+
 ## Features
 
 What you would expect from basic object-oriented programming is supported:
