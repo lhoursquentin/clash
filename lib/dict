@@ -62,12 +62,14 @@ class Dict       \
   _pretty_print  \
   _remove        \
   _set           \
+  __del__        \
   __init__       \
 
 Dict_clear() {
-  "$buckets_"_foreach del
+  "$buckets_"_foreach Dict_clean_bucket
   "$buckets_"_clear
   "$self"_length__is 0
+  "$last_hashed_"_stale_is true
 }
 
 Dict_get() {
@@ -178,6 +180,12 @@ Dict_set() {
   fi
 }
 
+Dict__del__() {
+  "$self"_clear
+  del "$buckets_"
+  del "$last_hashed_"
+}
+
 Dict__init__() {
   local hash_cache_id="$(Dict_hash_cache_anonymous_id)"
   Dict_hash_cache "$hash_cache_id" true
@@ -193,4 +201,10 @@ Dict__init__() {
 # "Static" methods
 Dict_matching_tuple() {
   [ "$("$2"_key; printf x)" = "$1"x ]
+}
+
+# Cannot be create and applied in a subshell since we modify our global state
+Dict_clean_bucket() {
+  "$1"_foreach del # since tuples are only references we need to delete them
+  del "$1" # delete bucket
 }
