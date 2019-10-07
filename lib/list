@@ -15,6 +15,16 @@ class List_node \
   next          \
   previous      \
 
+class List_view  \
+  head_          \
+  length_        \
+  tail_          \
+  _sort          \
+
+List_view_sort() {
+  List_sort
+}
+
 class List       \
   head_          \
   length_        \
@@ -38,6 +48,7 @@ class List       \
   _remove        \
   _remove_if     \
   _set           \
+  _sort          \
   _append_node_  \
   _remove_node_  \
   __del__        \
@@ -350,6 +361,94 @@ List_set() {
   done
 
   "$node"_value_is "$2"
+}
+
+# Some kind of merge sort
+# No new node is created, we make use of list "views"
+List_sort() {
+  if [ "$length_" -eq 0 ] || [ "$length_" -eq 1 ]; then
+    return
+  fi
+
+  local mid_len="$((length_ / 2))"
+  local index=1
+  local node="$head_"
+  while [ "$index" -lt "$mid_len" ]; do
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
+
+  # Left and right sub lists are of type List_view (which was created for the
+  # occasion) which is a stripped down version of List. it avoids creating many
+  # methods that aren't needed which greatly improves performance (on 1000 elts:
+  # bash x3, ksh x20, dash x5)
+  local left="$(List_view_anonymous_id)"
+  List_view "$left"
+  "$left"_head__is "$head_"
+  "$left"_tail__is "$node"
+  local left_length="$mid_len"
+  "$left"_length__is "$left_length"
+
+  local right="$(List_view_anonymous_id)"
+  List_view "$right"
+  "$right"_head__is "$("$node"_next)"
+  "$right"_tail__is "$tail_"
+  local right_length="$((length_ - left_length))"
+  "$right"_length__is "$right_length"
+
+  "$left"_sort
+  "$right"_sort
+
+  local left_index=0
+  local left_node="$("$left"_head_)"
+
+  local right_index=0
+  local right_node="$("$right"_head_)"
+
+  local previous_node=
+  local new_node=
+
+  # Merge left and right lists
+  while [ "$left_index" -lt "$left_length" ] &&
+    [ "$right_index" -lt "$right_length" ]
+  do
+    # let's start with numbers only, python style __lt__ stuff will come later
+    if [ "$("$left_node"_value)" -lt "$("$right_node"_value)" ]; then
+      new_node="$left_node"
+      left_node="$("$left_node"_next)"
+      left_index="$((left_index + 1))"
+    else
+      new_node="$right_node"
+      right_node="$("$right_node"_next)"
+      right_index="$((right_index + 1))"
+    fi
+
+    if [ -z "$previous_node" ]; then
+      "$self"_head__is "$new_node"
+      "$new_node"_previous_is ''
+    else
+      "$new_node"_previous_is "$previous_node"
+      "$previous_node"_next_is "$new_node"
+    fi
+
+    previous_node="$new_node"
+  done
+
+  # potential remaining elements in left or right list
+  if [ "$left_index" -lt "$left_length" ]; then
+    "$left_node"_previous_is "$previous_node"
+    "$previous_node"_next_is "$left_node"
+    "$self"_tail__is "$("$left"_tail_)"
+  elif [ "$right_index" -lt "$right_length" ]; then
+    "$right_node"_previous_is "$previous_node"
+    "$previous_node"_next_is "$right_node"
+    "$self"_tail__is "$("$right"_tail_)"
+  else
+    "$self"_tail__is "$new_node"
+  fi
+
+  del "$left" # List_view doesn't have a "clear elements" hook on del
+  del "$right"
 }
 
 List_append_node_() {
