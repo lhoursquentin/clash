@@ -270,13 +270,18 @@ class() {
   # Not using local should be safe in this case since we only fetch the attr
   # values between setting and unsetting it, there should be no down or up frame
   # modification of this var.
+  if "$__getattr__"; then
+    attr_defs='
+          __allow_getattr=false
+          '"$attr_defs"'
+          unset __allow_getattr'
+  fi
+
   attr_defs='
         if [ -z "$_upper_object_id" ] ||
            [ "$_upper_object_id" != '"'"'"$1"'"'"' ]
         then
-          __allow_getattr=false
           '"$attr_defs"'
-          unset __allow_getattr
           local self='"'"'"$1"'"'"'
           local _upper_object_id='"'"'"$1"'"'"'
         fi'
