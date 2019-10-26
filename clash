@@ -182,7 +182,7 @@ class() {
         ;;
       *)
         delete_fn="$delete_fn"'
-        unset -f '"'"'"$1"'"'"'_'"$1"''
+        unset -f '"'"'"$1"'"'"'_'"$1"
         case "$1" in
           *_)
             constructor_attr_defs="$constructor_attr_defs"'
@@ -220,7 +220,7 @@ class() {
         fi'
             fi
             attr_methods_defs="$attr_methods_defs"'
-        printf %s '"'"'"'"'"'""$_tmp_getter""'"'"'"'"'"'
+        printf %s '"'"'"'"'"'$_tmp_getter'"'"'"'"'"'
       }'"'"
             attr_index="$((attr_index + 1))"
             ;;
@@ -244,7 +244,7 @@ class() {
             _tmp_getter="${_tmp_getter%x}"
             ;;
         esac
-        eval '"$func_prefix"''"'"'"$1"'"'_$1'"'"'"'"'"'"'"''"$func_suffix"' {'
+        eval '"$func_prefix'"'"$1"'"'_$1'"'"'"'"'"'"'$func_suffix"' {'
         if "$__getattr__"; then
           attr_methods_defs="$attr_methods_defs"'
         if "${__allow_getattr:-true}"; then
@@ -252,11 +252,11 @@ class() {
         fi'
         fi
         attr_methods_defs="$attr_methods_defs"'
-          printf %s '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'""'"'"$_tmp_getter"'"'""'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
+          printf %s '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'$_tmp_getter'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
         }'"'"'"'"'"'"'"'"'
       }'"'"
         attr_defs="$attr_defs"'
-          local '"$1"'="$('"'"'"$1"'"'"''"_$1"'; printf x)"
+          local '"$1"'="$('"'"'"$1"'"'_$1"'; printf x)"
           '"$1"'="${'"$1"'%x}"'
         ;;
     esac
@@ -287,9 +287,9 @@ class() {
         fi'
   for method do
     delete_fn="$delete_fn"'
-        unset -f '"'"'"$1"'"'"''"$method"''
+        unset -f '"'"'"$1"'"'$method"
     method_defs="$method_defs"'
-      eval '"$func_prefix"'"$1"'"'"'_'"${method#_}"''"$func_suffix"' {'"$attr_defs"'
+      eval '"$func_prefix"'"$1"'"'"'_'"${method#_}$func_suffix"' {'"$attr_defs"'
         '"$name$method"' "$@"
       }'"'"
   done
@@ -297,7 +297,7 @@ class() {
     delete_fn="'"'"$1"'"'"'__del__
         '"$delete_fn"
   fi
-  delete_fn='eval '"$func_prefix"'__internal_del__"$1"'"'"''"$func_suffix"' {
+  delete_fn='eval '"$func_prefix"'__internal_del__"$1"'"'$func_suffix"' {
         '"$delete_fn"'
       }'"'"'
   '
