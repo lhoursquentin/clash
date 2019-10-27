@@ -32,11 +32,15 @@ class Dict_tuple \
 
 Dict_tuple_print() {
   printf '('
-  if ! "$key"_print 2> /dev/null; then
+  if command -v "$key"_print > /dev/null; then
+    "$key"_print
+  else
     printf '%s' "$key"
   fi
   printf ', '
-  if ! "$value"_print 2> /dev/null; then
+  if command -v "$value"_print > /dev/null; then
+    "$value"_print
+  else
     printf '%s' "$value"
   fi
   printf ')'
@@ -82,9 +86,12 @@ Dict_get() {
     "$last_hashed_"_hash_is "$hash_value"
     "$last_hashed_"_stale_is false
   fi
-  local tuple=
+
+  local node="$self"_node_"$hash_value"
   local tuple_list=
-  if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
+  local tuple=
+  if command -v "$node"_tuple_list_value > /dev/null &&
+    tuple_list="$("$node"_tuple_list_value)" &&
     tuple="$("$tuple_list"_find Dict_matching_tuple "$1")"
   then
     local value="$("$tuple"_value; printf x)"
@@ -137,14 +144,16 @@ Dict_remove() {
     "$last_hashed_"_hash_is "$hash_value"
     "$last_hashed_"_stale_is false
   fi
+  local node="$self"_node_"$hash_value"
   local tuple_list=
-  if tuple_list="$("$self"_node_"$hash_value"_tuple_list_value 2> /dev/null)" &&
+  if command -v "$node"_tuple_list_value > /dev/null &&
+    tuple_list="$("$node"_tuple_list_value)" &&
     "$tuple_list"_remove_if Dict_matching_tuple "$1"
   then
     "$self"_length__is "$((length_ - 1))"
     if "$tuple_list"_is_empty; then
       del "$tuple_list"
-      "$buckets_"_remove_node_ "$self"_node_"$hash_value"_tuple_list
+      "$buckets_"_remove_node_ "$node"_tuple_list
     fi
   else
     printf 'Key not found: %s\n' "$1" >&2
@@ -154,7 +163,7 @@ Dict_remove() {
 
 Dict_set() {
   if [ "$("$self"_get "$1" 2> /dev/null; printf x)" = "$2"x ]; then
-    return 0
+    return 0 # key/value pair already in the dict
   fi
   if ! "$("$last_hashed_"_stale)" &&
      [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
@@ -169,9 +178,8 @@ Dict_set() {
   local tuple_id="$(Dict_tuple_anonymous_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
   "$self"_length__is "$((length_ + 1))"
-  # TODO unset path to avoid extra failed execve
-  if tuple_list="$("$node"_tuple_list_value 2> /dev/null)"; then
-    "$tuple_list"_append "$tuple_id"
+  if command -v "$node"_tuple_list_value > /dev/null; then
+    "$("$node"_tuple_list_value)"_append "$tuple_id"
   else
     local list_id="$(List_anonymous_id)"
     List "$list_id" "$tuple_id"

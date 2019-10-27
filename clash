@@ -137,9 +137,11 @@ quote() {
 }
 
 del() {
-  __internal_del__"$1" 2> /dev/null || return
-  # unsetting a function from itself does not do anything in ksh93
-  unset -f __internal_del__"$1"
+  command -v __internal_del__"$1" > /dev/null && {
+    __internal_del__"$1"
+    # unsetting a function from itself does not do anything in ksh93
+    unset -f __internal_del__"$1"
+  } # return value needed
 }
 
 class() {

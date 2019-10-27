@@ -283,13 +283,14 @@ List_pretty_print() {
 List_print() {
   (
     node_printer() {
-      local OLD_PATH="$PATH"
-      PATH=
-      if ! PATH="$OLD_PATH" "$1"_print 2> /dev/null; then
-        PATH="$OLD_PATH"
+      # let's assume there's no binary called $1_print that could cause a false
+      # positive, otherwise we could verify the output of command -v which
+      # should be exactly "$1"_print (or just unset PATH)
+      if command -v "$1"_print > /dev/null; then
+        "$1"_print
+      else
         printf '%s' "$1"
       fi
-      PATH="$OLD_PATH"
       local delim=
       if [ -z "${IFS+x}" ]; then
         delim=' ' # space delimiter if IFS is unset
