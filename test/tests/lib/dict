@@ -21,6 +21,12 @@ assert_true mydict_set 'USA' 'Washington' -- 'Failed to insert a new key/value'
 assert_out mydict_get 'England' -- 'London'
 assert_out mydict_get 'USA' -- 'Washington'
 assert_out mydict_get 'Spain' -- 'Madrid'
+
+# 1st one is to check no hash hit, 2nd one is to check hash hit but no match
+# found while iterating over the bucket.
+# FIXME this is currently bound to the hash function used in the current
+# implementation, the hash function should be set from the tests to be able to
+# have something robust.
 assert_false mydict_get 'something' -- 'Non-existing key'
 assert_false mydict_get 'a' -- 'Non-existing key'
 

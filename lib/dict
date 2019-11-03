@@ -9,6 +9,7 @@ fi >&2
 
 . "${CLASH_ROOT-.}"/lib/list || exit
 
+# for each char: get ascii value, sum them all, and modulo 8 the total
 dummy_hash() {
   local str="$1"
   local hash_value=0
@@ -19,7 +20,7 @@ dummy_hash() {
     tmp="$str"
     str="${str#?}"
     char="${tmp%$str}"
-    char_num="$(printf %d "'$char")"
+    char_num="$(printf %d "'$char")" # not supported by osh so far (v0.6.0)
     hash_value="$((hash_value + char_num))"
   done
   printf '%s\n' "$((hash_value % 8))"
@@ -49,6 +50,8 @@ Dict_tuple_print() {
 # Any decent hash function written in shell will be far from fast, we'll keep
 # this structure to avoid recomputing the hash function if 2 successive lookups
 # are done. This basically just keeps the last key/hash computation.
+# This effectively means that we consider the hashing function to be slower
+# than spawning a few subshells, which might depend on the shell in use.
 class Dict_hash_cache \
   stale               \
   key                 \
@@ -90,9 +93,9 @@ Dict_get() {
   local node="$self"_node_"$hash_value"
   local tuple_list=
   local tuple=
-  if command -v "$node"_tuple_list_value > /dev/null &&
+  if command -v "$node"_tuple_list_value > /dev/null && # matching bucket?
     tuple_list="$("$node"_tuple_list_value)" &&
-    tuple="$("$tuple_list"_find Dict_matching_tuple "$1")"
+    tuple="$("$tuple_list"_find Dict_matching_tuple "$1")" # matching tuple?
   then
     local value="$("$tuple"_value; printf x)"
     printf %s "${value%x}"
@@ -102,6 +105,8 @@ Dict_get() {
   fi
 }
 
+# FIXME setting the hash function via a method is counter-intuitive compared to
+# clash general design
 Dict_hash_function() {
   if [ "$hash_function_" = "$1" ]; then
     printf 'Nothing to do, hash function already set to: %s\n' "$1" >&2
@@ -146,9 +151,9 @@ Dict_remove() {
   fi
   local node="$self"_node_"$hash_value"
   local tuple_list=
-  if command -v "$node"_tuple_list_value > /dev/null &&
+  if command -v "$node"_tuple_list_value > /dev/null && # matching bucket?
     tuple_list="$("$node"_tuple_list_value)" &&
-    "$tuple_list"_remove_if Dict_matching_tuple "$1"
+    "$tuple_list"_remove_if Dict_matching_tuple "$1" # removed tuple?
   then
     "$self"_length__is "$((length_ - 1))"
     if "$tuple_list"_is_empty; then
@@ -165,6 +170,7 @@ Dict_set() {
   if [ "$("$self"_get "$1" 2> /dev/null; printf x)" = "$2"x ]; then
     return 0 # key/value pair already in the dict
   fi
+  # _get call right above should have populated the hash cache
   if ! "$("$last_hashed_"_stale)" &&
      [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
     local hash_value="$("$last_hashed_"_hash)"
@@ -178,12 +184,12 @@ Dict_set() {
   local tuple_id="$(Dict_tuple_anonymous_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
   "$self"_length__is "$((length_ + 1))"
-  if command -v "$node"_tuple_list_value > /dev/null; then
+  if command -v "$node"_tuple_list_value > /dev/null; then # matching bucket?
     "$("$node"_tuple_list_value)"_append "$tuple_id"
   else
     local list_id="$(List_anonymous_id)"
-    List "$list_id" "$tuple_id"
-    List_node "$node"_tuple_list "$list_id"
+    List "$list_id" "$tuple_id" # create new bucket containing the new tuple
+    List_node "$node"_tuple_list "$list_id" # create bucket list node
     "$buckets_"_append_node_ "$node"_tuple_list
   fi
 }
@@ -196,7 +202,7 @@ Dict__del__() {
 
 Dict__init__() {
   local hash_cache_id="$(Dict_hash_cache_anonymous_id)"
-  Dict_hash_cache "$hash_cache_id" true
+  Dict_hash_cache "$hash_cache_id" true # set cached initially as stale
   "$self"_last_hashed__is "$hash_cache_id"
   local list_id="$(List_anonymous_id)"
   List "$list_id"
@@ -207,6 +213,7 @@ Dict__init__() {
 }
 
 # "Static" methods
+
 Dict_matching_tuple() {
   [ "$("$2"_key; printf x)" = "$1"x ]
 }
