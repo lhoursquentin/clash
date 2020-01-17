@@ -191,7 +191,7 @@ Methods are just generated functions wrapping a local declaration of all the att
 
 All these methods and attributes are generated using `eval` and playing with quotes (a lot of quotes) to preserve IFS characters.
 
-# FAQ
+# Q/A
 
 ## What's the point when python, perl and other more robust scripting languages exist?
 
@@ -202,7 +202,7 @@ start converting clash to rust and target WebAssembly.
 
 Pretty bad! But this depends heavily on which shell you are using and the number
 and size of the objects you are creating. Creating a dozen of objects with a few
-methods and attributes and it won't be noticeable. However creating hundreds or
+methods and attributes won't be noticeable. However creating hundreds or
 thousands of objects will lead to (very) slow execution and a high load.
 
 Considering how **clash** works this is to be expected, for instance one
@@ -219,10 +219,10 @@ truck_start() {
 }
 ```
 
-Here we have two attributes, so **usually** at least two new processes are
-spawned to just prepare the local variables used in the method. This is where
-some shells shine more than others, **ksh93** for instance does not necessarily
-spawn a new process for command substitution.
+Here we have two attributes, `speed` and `brand`, so **usually** at least two
+new processes are spawned to just prepare the local variables used in the
+method. This is where some shells shine more than others, **ksh93** for instance
+does not necessarily spawn a new process for command substitution.
 
 For example let's consider the following:
 
@@ -241,9 +241,9 @@ necessarily, and `echo` usually is a builtin, which means everything happening
 here can be strictly done by the shell. Now let's see what the most common
 shells do:
 
-bash/mksh/zsh/dash
+bash/mksh/zsh/dash/busybox
 ```
-$ strace -cfe process bash say_hello.sh
+sh$ strace -cfe process bash say_hello.sh
 strace: Process 27040 attached
 strace: Process 27041 attached
 strace: Process 27042 attached
@@ -263,7 +263,7 @@ Total 5 new processes (excluding the initial execve), all `clone` calls, but
 **ksh93** on the other hand:
 
 ```
-$ strace -cfe process ksh say_hello.sh
+sh$ strace -cfe process ksh say_hello.sh
 % time     seconds  usecs/call     calls    errors syscall
 ------ ----------- ----------- --------- --------- ----------------
  97.10    0.000536         536         1           execve
@@ -273,48 +273,53 @@ $ strace -cfe process ksh say_hello.sh
 ```
 
 0 clone calls, **ksh93** executes that script in a single process, fascinating
-right? But you might think that it just understands that result is never used,
+right? But you might think that it just understands that `result` is never used,
 or that maybe if you were creating some variables inside that subshell it would
 have needed to fork to be able to throw away the environment one it's done.
 But no, even in all those cases **ksh93** does not clone/fork.
 
-Now let's take an example with clash to show how big of a difference this can
-make:
+Now let's take an example with **clash** to show how big of a difference this
+can make:
 
+```sh
+sh$ shuf --input-range 1-30 > shuffled-numbers.txt # use a fixed random sequence
+```
+And here is `sort.sh`
 ```sh
 . ./clash
 . ./lib/list
 
-List foo $(seq 30 | shuf)
+List foo $(cat shuffled-numbers.txt)
 foo_sort
 foo_print
 ```
 
-This creates a list foo of 30 shuffled elements, sorts it and prints it on
-stdout.
+This creates a list `foo` of 30 shuffled elements, sorts it and prints it on
+the standard output.
 
 *(Please note that the results may vary a little due to the shuffling part of
-this script, this is in no way a serious benchmark)*
+this script, the version of the shells used, your machine etc. This is in no way
+a serious benchmark)*
 
 ```
-$ strace -cfe process ksh sort.sh
+sh$ strace -cfe process ksh sort.sh
 [...]
 % time     seconds  usecs/call     calls    errors syscall
 ------ ----------- ----------- --------- --------- ----------------
- 63.43    0.000921         102         9         4 wait4
- 30.92    0.000449          32        14        11 execve
-  5.10    0.000074          24         3           clone
-  0.55    0.000008           1         6         3 arch_prctl
------- ----------- ----------- --------- --------- ----------------
-100.00    0.001452                    32        18 total
+ 73.24    0.000594          54        11         9 execve
+ 17.39    0.000141          23         6         4 wait4
+  7.64    0.000062          31         2           clone
 ```
 
-3 clone calls for **ksh93** that's not too bad, especially since 2 of them are due
-to calling 2 external binaries, `seq` and `shuf`.
+2 clone calls for **ksh93** that's not too bad, especially since one them is
+caused by the need to execute `cat`, which isn't a builtin.
+
+The failed `execve` calls are mostly due to some compatibility checks when
+sourcing **clash**, we can ignore them.
 
 Let's also check the running time that we'll compare with the other shells
 ```
-$ time ksh sort.sh
+sh$ time ksh sort.sh
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
 
 real    0m0.081s
@@ -325,24 +330,21 @@ sys     0m0.007s
 Now let's try it with the other shells:
 
 ```
-$ strace -cfe process bash sort.sh
+sh$ strace -cfe process bash sort.sh
 [...]
 % time     seconds  usecs/call     calls    errors syscall
 ------ ----------- ----------- --------- --------- ----------------
- 69.10    0.069408          41      1653       826 wait4
- 30.67    0.030803          37       827           clone
-  0.23    0.000230          76         3           execve
-  0.01    0.000006           1         6         3 arch_prctl
------- ----------- ----------- --------- --------- ----------------
-100.00    0.100447                  2489       829 total
+ 72.67    0.085384          50      1686       843 wait4
+ 27.11    0.031848          37       843           clone
+  0.22    0.000255         127         2           execve
 ```
 
-Around 800 clone calls, yes that's right, creating and sorting a list of 30
-elements spawns no less than 800 processes with bash/zsh/dash/busybox.
+Around 800 clone calls, yes that's right, creating, sorting and printing a list
+of 30 elements spawns no less than 800 processes with bash/zsh/dash/busybox.
 
 And looking at bash running time:
 ```
-$ time bash sort.sh
+sh$ time bash sort.sh
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
 
 real    0m0.396s
@@ -352,61 +354,58 @@ sys     0m0.119s
 
 Roughly 5 times slower.
 
-Don't see mksh mentioned? Well it can't be compared to bash/dash etc. since it
-turns out that in mksh `printf` is not a builtin, and clash heavily relies on
-`printf` which explains the following results:
+Don't see **mksh** mentioned? Well it is a bit special since it turns out that
+in mksh `printf` is not a builtin, and clash heavily relies on `printf` which
+explains the following results:
 
 ```
-$ strace -cfe process mksh sort.sh
+sh$ strace -cfe process mksh sort.sh
 [...]
 % time     seconds  usecs/call     calls    errors syscall
 ------ ----------- ----------- --------- --------- ----------------
- 93.74    0.867441         225      3850      1924 wait4
-  3.73    0.034554          17      1925           clone
-  2.36    0.021831          19      1099           execve
-  0.17    0.001548           0      2198      1099 arch_prctl
------- ----------- ----------- --------- --------- ----------------
-100.00    0.925374                  9072      3023 total
+ 93.57    0.829082         212      3908      1954 wait4
+  3.83    0.033943          17      1954           clone
+  2.43    0.021552          19      1112           execve
 ```
 
-Almost 2000 clone and 1000 execve, this is wild.
+Almost 2000 **clone** and 1000 **execve**, this is wild.
 
 ```
-$ time mksh sort.sh
+sh$ time mksh sort.sh
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
 
-real    0m4.978s
-user    0m1.953s
-sys     0m3.104s
+real    0m5.224s
+user    0m2.015s
+sys     0m3.282s
 ```
 
 5 seconds to sort a list of 30 elements, now you know what to use to train your
 machine learning models.
 
-Want more? Let's try with 1000 elements instead of 30, see of it goes with
+Want more? Let's try with 1000 elements instead of 30, see how it goes with
 **bash**:
 
 ```
-$ strace -cf bash sort.sh
+sh$ strace -cf bash sort.sh
 [...]
 % time     seconds  usecs/call     calls    errors syscall
 ------ ----------- ----------- --------- --------- ----------------
- 65.29   36.087855         399     90243     45121 wait4
- 29.03   16.042587         355     45122           clone
-  2.03    1.122136           2    536207           rt_sigprocmask
+ 66.95   33.078252         367     90108     45054 wait4
+ 27.64   13.652942         303     45054           clone
+  1.89    0.932990           1    535447           rt_sigprocmask
 [...]
 ```
 
 ```
-$ time bash sort.sh 1000
+sh$ time bash sort.sh
 [...]
-real    1m5.525s
-user    0m18.009s
-sys     0m49.866s
+real    1m8.619s
+user    0m17.712s
+sys     0m53.141s
 ```
 
 More than a minute to sort 1000 elements, please also note that on the total
-90243 `wait4` syscalls, half of them resulted in errors (ECHILD, No child
+90108 `wait4` syscalls, half of them resulted in errors (ECHILD, No child
 processes, haven't investigated why though), same goes for **zsh** although it
 definitely runs a bit faster.
 
@@ -414,44 +413,141 @@ Interestingly **dash** shows a negligible number of `wait4` errors, and takes
 around 3x less time to run on average:
 
 ```sh
-$ strace -cf dash sort.sh
+sh$ strace -cf dash sort.sh
 [...]
 % time     seconds  usecs/call     calls    errors syscall
 ------ ----------- ----------- --------- --------- ----------------
- 49.54    4.880581         108     45016         8 wait4
- 35.92    3.538674          78     45008           clone
-  5.03    0.495295           5     97044           read
+ 45.31    4.239508          94     45056         2 wait4
+ 39.09    3.657587          81     45054           clone
+  5.53    0.516913           5     97154           read
 [...]
 ```
 
-On the other hand busybox has 90% of its wait4 failing.
+On the other hand busybox is the complete opposite with 90% of its `wait4` calls
+failing.
+
+All this to say that you can't expect good performance when starting to use a
+lot of objects, that's the way shell command substitution works and **clash**
+design definitely doesn't help with that.
+
+Even **ksh93** that avoids spawning new processes struggles to keep the lead in
+terms of speed when going over a few thousands of objects in use.
 
 ## Why not generate variables instead of functions?
 
 This is a valid point, especially one of the first thing that comes to mind is
 why generate a function to set the attribute value (`obj_attr_is foo`) when you
-could just do `obj_attr=foo`. Well `obj_attr=foo` works fine, but what about
-`objname=obj; ${objname}_attr=foo`? It doesn't unless you cheat with assignment
-builtins such as `declare`/`typeset`/`local` or use `eval`, which isn't going to
-like quotes.  This pattern of `${obj}_attr` is something you encounter all the
-time, once you pass an object name as a parameter of a function, how do you
-directly use its original global variable name? You can't.
+could just do `obj_attr=foo`.
 
-Though using variables would definitely improve a few things, including speeding
-up methods by avoiding one command substitution per attribute when setting up
-the method context. This is definitely something that might be worth trying at
-least.
+Well `obj_attr=foo` works fine, but what about `objname=obj;
+${objname}_attr=foo`? It doesn't unless you cheat with assignment builtins such
+as `declare`/`typeset`/`local` or use `eval`, which is going to either reduce
+the portability of your script or is going to make it really hard to read. This
+pattern of `${obj}_attr` is something you encounter all the time, once you pass
+a variable name as a parameter of a function, how do you directly use its
+original global variable name? You can't. This is especially true for object
+oriented programming, how do you make use of `$self`?
+
+Let's take an example:
+
+```sh
+my_very_long_object_method() {
+  "$self"_attribute=hello
+}
+
+self=my_very_long_object # `self' is global here for the example purpose
+
+my_very_long_object_method # call method
+```
+
+When calling that method we get:
+```
+my_very_long_object_attribute=hello: command not found
+```
+Because the shell didn't recognize an assignment (due to trying to expand a
+variable in the lvalue) it deduced that we were trying to run a command called
+`my_very_long_object_attribute=hello`, which of course does not exist.
+
+Now we could trick the shell into deferring the assignment after the evaluation
+of `$self` by using an assignment builtin like `declare/typeset/export`:
+
+```sh
+  declare -g "$self"_attribute=hello # -g to set it in the global scope
+```
+
+It works!
+
+Though the main issue here is portability, **busybox** and **dash** do not
+support `declare` and `typeset`. On the other hand `readonly`, `export` and
+`local` have a very specific purpose which doesn't fit here.
+
+So let's just use the almighty `eval`!
+```sh
+  eval "$self"_attribute=hello
+```
+
+That's even easier to read than `declare -g`.
+
+But now what if we want to assign a value passed in parameter of the method?
+
+```sh
+my_very_long_object_method() {
+  eval "$self"_attribute="$1"
+}
+
+my_very_long_object_method "It's showtime!"
+```
+
+On most shells you should see something like: `syntax error: unterminated quoted
+string`, this is due to how `eval` works. Simply put, `eval` just adds another
+round of expansion, meaning you can take your line, expand the variables and
+then run it as if it was written in your script as is. So basically the `eval`
+line is replaced by:
+
+```sh
+  my_very_long_object_attribute=It's showtime!
+```
+
+And this is not valid due to that simple quote, even worse there is also that
+space after `It's` that would have gotten in the way, what we wanted was to only
+expand `$self` like this:
+
+```sh
+  my_very_long_object_attribute=$1
+```
+
+*(Interestingly ksh93 does not throw any error and just eats the quote as if
+nothing happened, resulting in `Its showtime!` assigned to the variable)*
+
+Simple fix, single quote your variable so that it get expanded **after** `eval`
+first expansion:
+
+
+```sh
+my_very_long_object_method() {
+  eval "$self"_attribute='$1'
+}
+```
+
+Fantastic! Though you might understand where this is going, this is way more
+complicated than it should be, and usually to avoid repeated complexity we tend
+to create functions, which is **clash** `<obj_attr>_is` method whole point.
+
+Using variables is not all bad though, if used internally it would definitely
+improve a few things, including speeding up methods by avoiding one command
+substitution per attribute when setting up the method context. This is
+definitely something that might be worth trying in a later version at least.
 
 Also one thing to note is that using variables would mean bypassing `getattr`
 and `setattr` hooks when using direct access, which would defeat their purpose.
 
 ## I don't see `sh` in the compatibility table, does this support the Bourne shell?
 
-Nowadays (2020), the Bourne shell and `sh` are usually two different things.
-`sh` is on most systems just a symlink to another modern shell, usually to
-bash/dash/mksh/busybox:
+Nowadays (2020), the Bourne shell and `/bin/sh` are usually two different
+things. `sh` is on most systems just a symlink to another modern shell, usually
+to bash, dash, mksh or busybox:
 ```
-$ ls -l /bin/sh
+sh$ ls -l /bin/sh
 lrwxrwxrwx. 1 root root 4 Aug  5 03:21 /bin/sh -> bash
 ```
 
@@ -460,8 +556,8 @@ So basically in this case running something `sh` is exactly the same as running
 but that it respects POSIX, which means that you can still use bash arrays in
 POSIX mode for instance even if those do not appear once in the [specification](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html).
 
-So does clash support the Bourne shell? Well it hasn't been tested (though it's
-unlikely since the original Bourne shell didn't support functions), but
+So does **clash** work with the Bourne shell? It hasn't been tested (though
+it's unlikely since the original Bourne shell didn't support functions), but
 technically any POSIX compliant shell supporting `local` should be able to use
 **clash**, and if it doesn't feel free to open an issue.
 
