@@ -193,15 +193,10 @@ check_frame_leak() {
 }
 
 case "$KSH_VERSION" in
-   # mksh typeset works exactly like the usual local, even with the non-posix
-   # function declaration style
-  *MIRBSD*)
-    check_frame_leak
-    ;;
-  *93*)
-    : # do not test this for ksh93
-    ;;
-  *)
+  # mksh typeset works exactly like the usual local, even with the non-posix
+  # function declaration style.
+  # Skip ksh93, other shells except mksh won't have this variable populated
+  *MIRBSD*|'')
     check_frame_leak
     ;;
 esac
