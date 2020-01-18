@@ -2,16 +2,18 @@
 
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
 
-: > run.log
+log="${CLASH_ROOT-.}"/test/run.log
+
+: > "$log"
 while IFS= read -r shell; do
   while IFS= read -r test; do
-    printf '%s %s - ' "$shell" "$test"
-    export TIME="$shell,$test,%e"
+    export TIME="Time: $shell,$test,%e"
     OLDIFS="$IFS"
     IFS=' '
     set -- $shell ${errexit+-e}
+    printf '%s %s - ' "$*" "$test"
     IFS="$OLDIFS"
-    if assert_true time "$@" "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> run.log 2>&1
+    if assert_true time "$@" "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> "$log" 2>&1
     then
       printf '\033[1;32mOK\033[0m\n'
     else
@@ -21,5 +23,8 @@ while IFS= read -r shell; do
   echo
 done < "${CLASH_ROOT-.}"/test/shells.txt
 
-
-end_tests
+end_tests && {
+  date
+  printf commit:; git rev-parse HEAD
+  sed -n 's/^Time: \(.*\)/\1/p' "$log"
+} >> "${CLASH_ROOT-.}"/test/runtime.txt
