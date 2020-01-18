@@ -20,7 +20,7 @@ dummy_hash() {
     tmp="$str"
     str="${str#?}"
     char="${tmp%$str}"
-    char_num="$(printf %d "'$char")" # not supported by osh so far (v0.6.0)
+    char_num="$(printf %d "'$char")" # supported by osh >= 0.7.pre6
     hash_value="$((hash_value + char_num))"
   done
   printf '%s\n' "$((hash_value % 8))"
