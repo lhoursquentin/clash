@@ -1,6 +1,22 @@
 # Clash
 Portable shell oriented-object programming
 
+# Index
+
+* [What](#What)
+  * [Features](#Features)
+  * [Compatibility](#Compatibility)
+  * [How to use](#How-to-use)
+    * [Lib](#Lib)
+* [Why](#Why)
+* [How](#How)
+* [Q/A](#QA)
+  * [What's the point when python, perl and other more robust scripting languages exist?](#Whats-the-point-when-python-perl-and-other-more-robust-scripting-languages-exist)
+  * [What's the performance of clash? Show me the numbers!](#Whats-the-performance-of-clash-Show-me-the-numbers)
+  * [Why not generate variables instead of functions?](#Why-not-generate-variables-instead-of-functions)
+  * [I don't see `sh` in the compatibility table, does this support the Bourne shell?](#I-dont-see-sh-in-the-compatibility-table-does-this-support-the-Bourne-shell)
+* [Notes](#Notes)
+
 # What
 Define classes and instantiate objects in shell with the usual shell functions
 syntax.
