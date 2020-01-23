@@ -211,8 +211,15 @@ All these methods and attributes are generated using `eval` and playing with quo
 
 ## What's the point when python, perl and other more robust scripting languages exist?
 
-Agreed, that wasn't reasonable, please submit a pull request so that we can
-start converting clash to rust and target WebAssembly.
+This is something that comes up really often, I've found that [Oil
+Shell](http://www.oilshell.org/) main FAQ covers this topic thoroughly:
+
+- [I don't understand. Why not use a different a programming language?](http://www.oilshell.org/blog/2018/01/28.html#i-dont-understand-why-not-use-a-different-a-programming-language)
+- [Shouldn't we discourage people from writing shell scripts?](http://www.oilshell.org/blog/2018/01/28.html#shouldnt-we-discourage-people-from-writing-shell-scripts)
+- [Shouldn't scripts over 100 lines be rewritten in Python or Ruby?](http://www.oilshell.org/blog/2018/01/28.html#shouldnt-scripts-over-100-lines-be-rewritten-in-python-or-ruby)
+
+Be sure to check out [Oil](http://www.oilshell.org/) in more detail if you can,
+it's a very impressive project.
 
 ## What's the performance of clash? Show me the numbers!
 
