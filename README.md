@@ -91,7 +91,9 @@ Car_start() {
 
 # If declared, the constructor is called when creating the object
 Car__init__() {
-  echo "New $brand added to the garage"
+  echo "New $1 added to the garage"
+  "$self"_brand_is "$1"
+  "$self"_speed_is "$2"
 }
 ```
 

@@ -113,7 +113,7 @@ unset __clash_compat_local_supported
 unset __clash_compat_typeset_supported
 unset __clash_compat_second_pass
 
-quote() {
+__clash_quote() {
   local input="${1?}"
   local output=
   local new_input=
@@ -173,7 +173,7 @@ class() {
       |__init__    \
       |__setattr__ \
       )
-        eval local "$arg"=true # eval needed for osh
+        eval local "$arg"=true # eval needed for osh versions < 0.7.pre2
         ;;
     esac
   done
@@ -185,48 +185,58 @@ class() {
       *)
         delete_fn="$delete_fn"'
         unset -f '"'"'"$1"'"'"'_'"$1"
-        case "$1" in
-          *_)
-            constructor_attr_defs="$constructor_attr_defs"'
+        # Initial design ideas included a default __init__ (meaning no need to
+        # add it to the method list when creating the class), which would be
+        # overriden if declared, though that would mean that default __init__
+        # creation would override any previous method declaration, e.g:
+        # Car__init__() { [...]; }; class Car foo bar
+        # the default Car constructor would override the user defined one, which
+        # is not the case for all other methods and led to require this to work
+        if "$__init__"; then
+          # We need to declare them to prevent _is calls to leak in the global
+          # scope.
+          constructor_attr_defs="$constructor_attr_defs"'
       local '"$1"'='
-            attr_methods_defs="$attr_methods_defs"'
+          attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {'
-            if "$__getattr__"; then
-              attr_methods_defs="$attr_methods_defs"'
+          if "$__getattr__"; then
+            attr_methods_defs="$attr_methods_defs"'
         if "${__allow_getattr:-true}"; then
           '"'"'"$1"'"'"'__getattr__ '"$1"'
         fi
       }'"'"
-            else
-              attr_methods_defs="$attr_methods_defs"'
+          else
+            attr_methods_defs="$attr_methods_defs"'
         :
       }'"'"
-            fi
-            ;;
-          *)
-            constructor_attr_defs="$constructor_attr_defs"'
+          fi
+        else
+          # If no constructor is specified the default behavior is to assign
+          # positional arguments to each attribute sequentially.
+          constructor_attr_defs="$constructor_attr_defs"'
       local '"$1"'="${'"$attr_index"'}"'
-            attr_methods_defs="$attr_methods_defs"'
+          # __clash_quote is expensive, if there's no single quote we should
+          # avoid calling it.
+          attr_methods_defs="$attr_methods_defs"'
       local _tmp_getter="${'"$attr_index"'}"
       case "${'"$attr_index"'}" in
         *"'"'"'"*)
-          _tmp_getter="$(quote "${'"$attr_index"'}"; printf x)"
+          _tmp_getter="$(__clash_quote "${'"$attr_index"'}"; printf x)"
           _tmp_getter="${_tmp_getter%x}"
           ;;
       esac
       eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {'
-            if "$__getattr__"; then
-              attr_methods_defs="$attr_methods_defs"'
+          if "$__getattr__"; then
+            attr_methods_defs="$attr_methods_defs"'
         if "${__allow_getattr:-true}"; then
           '"'"'"$1"'"'"'__getattr__ '"$1"'
         fi'
-            fi
-            attr_methods_defs="$attr_methods_defs"'
+          fi
+          attr_methods_defs="$attr_methods_defs"'
         printf %s '"'"'"'"'"'$_tmp_getter'"'"'"'"'"'
       }'"'"
-            attr_index="$((attr_index + 1))"
-            ;;
-        esac
+          attr_index="$((attr_index + 1))"
+        fi
         delete_fn="$delete_fn"'
         unset -f '"'"'"$1"'"'"'_'"$1"'_is'
         attr_methods_defs="$attr_methods_defs"'
@@ -242,7 +252,7 @@ class() {
         local _tmp_getter="$1"
         case "$1" in
           *"'"'"'"'"'"'"'"'"'"*)
-            _tmp_getter="$(quote "$1"; printf x)"
+            _tmp_getter="$(__clash_quote "$1"; printf x)"
             _tmp_getter="${_tmp_getter%x}"
             ;;
         esac

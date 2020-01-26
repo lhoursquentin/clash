@@ -17,10 +17,10 @@ IFS='
 
 class Foo a b c d e f g h i j k l m n o p
 
-Foo foo
+Foo foo 1 2 3 4 5 6 7 8 9 10 11 12 13
 
 # would return foo3 before the bug fix
-assert_out foo_l -- ''
+assert_out foo_l -- 12
 
 # sanity check
 assert_true foo_l -- 'Failed to call getter'
@@ -29,90 +29,127 @@ assert_true foo_l -- 'Failed to call getter'
 del foo
 unset Foo
 
-# ===============================
-# Setup a new simple class with a method
+attr_basic() {
+  # ===============================
+  # Check getters preserve trailing whitespaces (and begin/middle ones too)
+
+  attr1='
+
+  newlines
+
+
+  '
+
+  attr2='     spaces     '
+  attr3='			tabs			'
+
+  Foo foo "$attr1" "$attr2" "$attr3"
+
+  assert_out foo_a -- "$attr1"
+  assert_out foo_b -- "$attr2"
+  assert_out foo_c -- "$attr3"
+
+  assert_out foo_printa_and_b -- "${attr1},${attr2}"
+
+  attr1="    s     $attr1"
+  attr2="    s     $attr2"
+  attr3="    s     $attr3"
+
+  # and via setters
+
+  foo_a_is "$attr1"
+  foo_b_is "$attr2"
+  foo_c_is "$attr3"
+
+  assert_out foo_a -- "$attr1"
+  assert_out foo_b -- "$attr2"
+  assert_out foo_c -- "$attr3"
+
+  assert_out foo_printa_and_b -- "${attr1},${attr2}"
+
+  # manual check just in case the testlib is the one not preserving whitespaces
+  [ "$(printf x; foo_a; printf x)" = x"$attr1"x ]
+  assert_true [ "$?" -eq 0 ] -- 'Testlib issue?'
+
+  del foo
+
+  # ===============================
+  # Check objects can hold single and double quotes strings
+
+  attr1="a'b"
+  attr2="c'd"
+  Foo single "$attr1" "$attr2" "$attr3"
+  assert_out single_printa_and_b -- "${attr1},${attr2}"
+  assert_out single_a -- "$attr1"
+  assert_true single_a_is "$attr1" -- 'Failed setter with single quoted value'
+  del single
+
+  attr1='a"b'
+  attr2='c"d'
+  Foo double "$attr1" "$attr2" "$attr3"
+  assert_out double_printa_and_b -- "${attr1},${attr2}"
+  assert_out double_a -- "$attr1"
+  assert_true double_a_is "$attr1" -- 'Failed setter with double quoted value'
+  del double
+}
+
+Foo__init__() {
+  assert_out "$self"_a -- ''
+  assert_out "$self"_b -- ''
+  assert_out "$self"_c -- ''
+
+  assert_out printf %s "$a" -- ''
+  assert_out printf %s "$b" -- ''
+  assert_out printf %s "$c" -- ''
+
+  assert_out printf %s "$1" -- "$attr1"
+  assert_out printf %s "$2" -- "$attr2"
+  assert_out printf %s "$3" -- "$attr3"
+
+  "$self"_a_is "$1"
+  "$self"_b_is "$2"
+  "$self"_c_is "$3"
+
+  assert_out "$self"_a -- "$1"
+  assert_out "$self"_b -- "$2"
+  assert_out "$self"_c -- "$3"
+}
+
+Foo_printa_and_b() {
+  printf %s,%s "$a" "$b"
+}
+
 class Foo \
   a       \
   b       \
-  c_      \
-  _printa \
+  c       \
+  _printa_and_b
+
+attr_basic
+
+# retry with a constructor
+class Foo \
+  a       \
+  b       \
+  c       \
+  _printa_and_b \
   __init__
 
-Foo__init__() {
-  printf %s,%s "$1" "$b" # print positional + attribute
-}
-
-Foo_printa() {
-  printf %s "$a"
-}
-
-# ===============================
-# Check getters preserve trailing whitespaces (and begin/middle ones too)
-
-attr1='
-
-newlines
-
-
-'
-
-attr2='     spaces     '
-attr3='			tabs			'
-
-# check assigment via constructor
-assert_out Foo foo "$attr1" "$attr2" "$attr3" -- "${attr1},${attr2}"
-
-assert_out foo_a -- "$attr1"
-assert_out foo_b -- "$attr2"
-assert_out foo_c_ -- ''
-
-assert_out foo_printa -- "$attr1"
-
-attr1="    s     $attr1"
-attr2="    s     $attr2"
-attr3="    s     $attr3"
-
-# and via setters
-
-foo_a_is "$attr1"
-foo_b_is "$attr2"
-foo_c__is "$attr3"
-
-assert_out foo_a -- "$attr1"
-assert_out foo_b -- "$attr2"
-assert_out foo_c_ -- "$attr3"
-
-assert_out foo_printa -- "$attr1"
-
-# manual check just in case the testlib is the one not preserving whitespaces
-[ "$(foo_a; printf x)" = "$attr1"x ]
-assert_true [ "$?" -eq 0 ] -- 'Testlib issue?'
-
-del foo
-
-# ===============================
-# Check objects can hold single and double quotes strings
-
-attr1="a'b"
-attr2="c'd"
-assert_out Foo single "$attr1" "$attr2" -- "${attr1},${attr2}"
-assert_out single_a -- "$attr1"
-assert_true single_a_is "$attr1" -- 'Failed setter with single quoted value'
-assert_out single_printa -- "$attr1"
-del single
-
-attr1='a"b'
-attr2='c"d'
-assert_true Foo double "$attr1" "$attr2" -- "${attr1},${attr2}"
-assert_out double_a -- "$attr1"
-assert_true double_a_is "$attr1" -- 'Failed setter with double quoted value'
-assert_out double_printa -- "$attr1"
-del double
+attr_basic
 
 # ===============================
 # Check attributes shadowing
 #
 # Different objects method calls with the same attributes names
+
+class Foo  \
+  a        \
+  _printa  \
+  _foo_mod \
+
+Foo_printa() {
+  printf %s "$a"
+}
 
 class Bar  \
   a        \
@@ -218,8 +255,8 @@ del other_foo
 
 class Foo  \
   a        \
-  c_       \
   b        \
+  c        \
   __init__ \
   _m       \
   d        \
@@ -227,15 +264,26 @@ class Foo  \
 Foo__init__() {
   assert_true [ "$#" -eq 6 ] -- 'incorrect nb args'
   assert_true [ "$self" = "$obj_name" ] -- 'failed to set self'
+  assert_out printf %s "$a" -- ''
+  assert_out printf %s "$b" -- ''
+  assert_out printf %s "$c" -- ''
+  assert_out printf %s "$d" -- ''
+  assert_out "$self"_a -- ''
+  assert_out "$self"_b -- ''
+  assert_out "$self"_c -- ''
+  assert_out "$self"_d -- ''
+  "$self"_a_is "$arg1"
+  "$self"_b_is "$arg2"
   assert_out "$self"_a -- "$arg1"
   assert_out "$self"_b -- "$arg2"
-  assert_out "$self"_c_ -- ''
-  assert_out "$self"_d -- "$arg3"
+  assert_out "$self"_c -- ''
+  assert_out "$self"_d -- ''
   assert_true [ "$1" = "$arg1" ] -- 'Incorrect arg'
   assert_true [ "$2" = "$arg2" ] -- 'Incorrect arg'
   assert_true [ "$3" = "$arg3" ] -- 'Incorrect arg'
   assert_true [ "$4" = "$arg4" ] -- 'Incorrect arg'
   assert_true [ "$5" = "$arg5" ] -- 'Incorrect arg'
+  assert_true [ "$6" = "$arg6" ] -- 'Incorrect arg'
   constructed=true
 }
 
@@ -252,10 +300,21 @@ Foo "$obj_name" "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
 assert_true "$constructed" -- 'Failed to call class __init__'
 constructed=false
 
+# Setting attributes in the constructor should not leak any variable in the
+# global scope
+assert_out printf %s "$a" -- ''
+assert_out printf %s "$b" -- ''
+
 assert_out "$obj_name"_a -- "$arg1"
 assert_out "$obj_name"_b -- "$arg2"
-assert_out "$obj_name"_c_ -- ''
-assert_out "$obj_name"_d -- "$arg3"
+
+assert_out "$obj_name"_c -- ''
+assert_out "$obj_name"_d -- ''
+
+# reset them for explicit constructor call
+"$obj_name"_a_is ''
+"$obj_name"_b_is ''
+
 "$obj_name"__init__ "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
 assert_true "$constructed" -- 'Failed to call class __init__'
 
@@ -263,20 +322,25 @@ del "$obj_name"
 
 class Foo  \
   a        \
-  c_       \
   b        \
+  c        \
   _m       \
   d        \
 
 constructed=false
-# Previous test Foo__init__ still exist, check is isn't called
+# Previous test Foo__init__ still exist, check it isn't called
 Foo "$obj_name" "$arg1" "$arg2" "$arg3" "$arg4" "$arg5" "$arg6"
 assert_false "$constructed" -- '__init__ method should not exist'
 
+# Setting attributes in the constructor should not leak any variable in the
+# global scope
+assert_out printf %s "$a" -- ''
+assert_out printf %s "$b" -- ''
+
 assert_out "$obj_name"_a -- "$arg1"
 assert_out "$obj_name"_b -- "$arg2"
-assert_out "$obj_name"_c_ -- ''
-assert_out "$obj_name"_d -- "$arg3"
+assert_out "$obj_name"_c -- "$arg3"
+assert_out "$obj_name"_d -- "$arg4"
 
 del "$obj_name"
 
@@ -334,7 +398,7 @@ arg1=a
 arg1_val=1
 arg2=b
 arg2_val=2
-arg3=c_
+arg3=c
 arg3_val=
 
 class Foo "$arg1" __getattr__ "$arg2" "$arg3"

@@ -43,7 +43,10 @@ find_value() {
 
 # constructor
 Btree__init__() {
-  printf 'Created %s with value %s\n' "$self" "$value"
+  printf 'Created %s with value %s\n' "$self" "$1"
+  "$self"_value_is "$1"
+  "$self"_left_is "$2"
+  "$self"_right_is "$3"
 }
 
 #       20
