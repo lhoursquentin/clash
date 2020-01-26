@@ -266,7 +266,7 @@ necessarily, and `echo` usually is a builtin, which means everything happening
 here can be strictly done by the shell. Now let's see what the most common
 shells do:
 
-bash/mksh/zsh/dash/busybox
+bash/mksh/zsh/dash/busybox/osh/yash
 ```
 sh$ strace -cfe process bash say_hello.sh
 strace: Process 27040 attached
@@ -301,7 +301,7 @@ sh$ strace -cfe process ksh say_hello.sh
 right? But you might think that it just understands that `result` is never used,
 or that maybe if you were creating some variables inside that subshell it would
 have needed to fork to be able to throw away the environment one it's done.
-But no, even in all those cases **ksh93** does not clone/fork.
+But no, even in all those cases **ksh93** does not fork.
 
 Now let's take an example with **clash** to show how big of a difference this
 can make:
@@ -470,34 +470,44 @@ as `declare`/`typeset`/`local` or use `eval`, which is going to either reduce
 the portability of your script or is going to make it really hard to read. This
 pattern of `${obj}_attr` is something you encounter all the time, once you pass
 a variable name as a parameter of a function, how do you directly use its
-original global variable name? You can't. This is especially true for object
-oriented programming, how do you make use of `$self`?
+original global variable name? You can't.
+
+This is especially true for object oriented programming, how do you make use of
+`$self`? You can't use a full object name in class methods either, or else it
+would only work for a specific instance and breaks the whole point of classes
+being a generic model.
 
 Let's take an example:
 
 ```sh
-my_very_long_object_method() {
-  "$self"_attribute=hello
+. ./clash
+
+class Car \
+  running \
+  _start
+
+Car_start() {
+  "$self"_running=true
 }
 
-self=my_very_long_object # `self' is global here for the example purpose
+Car truck
 
-my_very_long_object_method # call method
+truck_start
 ```
 
 When calling that method we get:
 ```
-my_very_long_object_attribute=hello: command not found
+truck_running=true: command not found
 ```
 Because the shell didn't recognize an assignment (due to trying to expand a
 variable in the lvalue) it deduced that we were trying to run a command called
-`my_very_long_object_attribute=hello`, which of course does not exist.
+`truck_running=true`, which of course does not exist.
 
 Now we could trick the shell into deferring the assignment after the evaluation
 of `$self` by using an assignment builtin like `declare/typeset/export`:
 
 ```sh
-  declare -g "$self"_attribute=hello # -g to set it in the global scope
+  declare -g "$self"_running=true # -g to set it in the global scope
 ```
 
 It works!
@@ -508,7 +518,7 @@ support `declare` and `typeset`. On the other hand `readonly`, `export` and
 
 So let's just use the almighty `eval`!
 ```sh
-  eval "$self"_attribute=hello
+  eval "$self"_running=true
 ```
 
 That's even easier to read than `declare -g`.
@@ -516,42 +526,48 @@ That's even easier to read than `declare -g`.
 But now what if we want to assign a value passed in parameter of the method?
 
 ```sh
-my_very_long_object_method() {
-  eval "$self"_attribute="$1"
+class Car      \
+  running      \
+  song_playing \
+  _start
+
+Car_start() {
+  eval "$self"_running=true
+  eval "$self"_song_playing="$1"
 }
 
-my_very_long_object_method "It's showtime!"
+Car truck
+
+truck_start 'Another One Bites the Dust'
 ```
 
-On most shells you should see something like: `syntax error: unterminated quoted
-string`, this is due to how `eval` works. Simply put, `eval` just adds another
-round of expansion, meaning you can take your line, expand the variables and
-then run it as if it was written in your script as is. So basically the `eval`
-line is replaced by:
+You should see something like: `One: command not found`, this is due to how
+`eval` works. Simply put, `eval` just adds another round of expansion, meaning
+you can take your line, expand the variables and then run it as if it was
+written in your script as is. So basically the `eval` line is replaced by:
 
 ```sh
-  my_very_long_object_attribute=It's showtime!
+  truck_song_playing=Another One Bites the Dust
 ```
 
-And this is not valid due to that simple quote, even worse there is also that
-space after `It's` that would have gotten in the way, what we wanted was to only
-expand `$self` like this:
+And this is not valid due to that space after `Another`, the shell understands
+it as pass `truck_song_playing=Another` as an environment variable for the `One`
+command, which does not exist. We could add some quotes, like `"'$1'"`, but what
+if the string passed contains a single quote as well? This would break. Instead
+we should find a way to defer `$1` expansion to happen after `$self` expansion.
+
+So basically we want this to expand first to:
 
 ```sh
-  my_very_long_object_attribute=$1
+  truck_song_playing=$1
 ```
 
-*(Interestingly ksh93 does not throw any error and just eats the quote as if
-nothing happened, resulting in `Its showtime!` assigned to the variable)*
-
-Simple fix, single quote your variable so that it get expanded **after** `eval`
-first expansion:
+Simple enough, single quote your variable so that it get expanded **after**
+`eval` first expansion:
 
 
 ```sh
-my_very_long_object_method() {
-  eval "$self"_attribute='$1'
-}
+  eval "$self"_song_playing='$1'
 ```
 
 Fantastic! Though you might understand where this is going, this is way more
