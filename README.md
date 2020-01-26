@@ -592,15 +592,17 @@ sh$ ls -l /bin/sh
 lrwxrwxrwx. 1 root root 4 Aug  5 03:21 /bin/sh -> bash
 ```
 
-So basically in this case running something `sh` is exactly the same as running
-`bash --posix`, which also doesn't mean that it only uses POSIX defined features
-but that it respects POSIX, which means that you can still use bash arrays in
-POSIX mode for instance even if those do not appear once in the [specification](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html).
+So basically in this case running a script with `sh` is exactly the same as
+running `bash --posix`, which also doesn't mean that it only uses POSIX defined
+features but that it respects POSIX, which means that you can still use bash
+arrays in POSIX mode for instance even if those do not appear once in the
+[specification](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html).
 
-So does **clash** work with the Bourne shell? It hasn't been tested (though
-it's unlikely since the original Bourne shell didn't support functions), but
-technically any POSIX compliant shell supporting `local` should be able to use
-**clash**, and if it doesn't feel free to open an issue.
+So does **clash** work with the Bourne shell? No, the original Bourne shell is
+not POSIX compliant, it didn't even support functions.
+
+**clash** should be able to work with any POSIX compliant shell supporting
+`local` assignments, and if it doesn't feel free to open an issue.
 
 # Notes
 
