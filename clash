@@ -261,12 +261,28 @@ class() {
         unset __clash_'"'"'"$1"'"'"'_'"$1"
         fi
 
+        # For upper frame leaking variable to work on ksh93 we specifically need
+        # to have the caller (a method) defined with the `function foo {}`
+        # style, and the callee (a setter) to have its method defined with the
+        # POSIX style. Otherwise with both of them as `function ...{}` the
+        # variable will either leak in the global scope if typeset isn't used,
+        # or just stay local if typeset is used. This is the reason why this
+        # function declaration is the only one hardcoded with the POSIX style.
+
         attr_methods_defs="$attr_methods_defs"'
-      eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {'
+      eval "$1"'"'_$1"'_is() {'
         if "$__setattr__"; then
           attr_methods_defs="$attr_methods_defs"'
         '"'"'"$1"'"'"'__setattr__ '"$1"' "$1"'
         fi
+
+        # upper frame leaking: if self is equal to the object we are setting the
+        # attribute of that means that we are calling this setter from a method
+        # of the same object. In that case we want to have our local variable
+        # updated after calling our setter, and to do that we assign the
+        # variable globally in the setter scope, so that the local one in the
+        # upper scope receives the update.
+
         attr_methods_defs="$attr_methods_defs"'
         if [ "$self" = '"'"'"$1"'"'"' ]; then
           '"$1"'=$1
