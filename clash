@@ -54,6 +54,7 @@ else
   unset -f __clash_compat_test
 
   if ! "$__clash_compat_test_var_local_assigned"; then # total failure
+    # this isn't tested and unlikely to work
     alias local=
   elif [ "$__clash_compat_test_var" = l ]; then
     # "local" keywords worked but local value has leaked to the global scope, the
@@ -194,8 +195,8 @@ class() {
         # the default Car constructor would override the user defined one, which
         # is not the case for all other methods and led to require this to work
         if "$__init__"; then
-          # We need to declare them to prevent _is calls to leak in the global
-          # scope.
+          # We still need to declare them to prevent potential `_is` calls from
+          # leaking in the global scope.
           constructor_attr_defs="$constructor_attr_defs"'
       local '"$1"'='
           attr_methods_defs="$attr_methods_defs"'
@@ -268,8 +269,8 @@ class() {
         fi
         attr_methods_defs="$attr_methods_defs"'
         if [ "$self" = '"'"'"$1"'"'"' ]; then
-          '"$1"'="$1"
-        fi
+          '"$1"'=$1
+        fi'
         if "$hybrid_mode"; then
           attr_methods_defs="$attr_methods_defs"'
           __clash_'"'"'"$1"'"'"_$1='$1
@@ -319,10 +320,10 @@ class() {
           unset __allow_getattr'
   fi
 
+  # Keep track of which object we are in so that if we call a method from this
+  # same object we can skip setting up its frame.
   attr_defs='
-        if [ -z "$_upper_object_id" ] ||
-           [ "$_upper_object_id" != '"'"'"$1"'"'"' ]
-        then
+        if [ "$_upper_object_id" != '"'"'"$1"'"'"' ]; then
           '"$attr_defs"'
           local self='"'"'"$1"'"'"'
           local _upper_object_id='"'"'"$1"'"'"'
