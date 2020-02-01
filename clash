@@ -145,6 +145,7 @@ del() {
 }
 
 class() {
+  local hybrid_mode="${CLASH_HYBRID:-false}"
   local name="$1"
   shift
   local attr_defs=
@@ -203,28 +204,26 @@ class() {
             attr_methods_defs="$attr_methods_defs"'
         if "${__allow_getattr:-true}"; then
           '"'"'"$1"'"'"'__getattr__ '"$1"'
-        fi
-      }'"'"
+        fi'
+          else
+            if ! "$hybrid_mode"; then
+              attr_methods_defs="$attr_methods_defs"'
+        :'
+            fi
+          fi
+          if "$hybrid_mode"; then
+            attr_methods_defs="$attr_methods_defs"'
+        printf %s "$__clash_'"'"'"$1"'"'_$1"'"
+      }'"'"'
+      eval __clash_"$1"'"_$1"=
           else
             attr_methods_defs="$attr_methods_defs"'
-        :
       }'"'"
           fi
         else
           # If no constructor is specified the default behavior is to assign
           # positional arguments to each attribute sequentially.
-          constructor_attr_defs="$constructor_attr_defs"'
-      local '"$1"'="${'"$attr_index"'}"'
-          # __clash_quote is expensive, if there's no single quote we should
-          # avoid calling it.
           attr_methods_defs="$attr_methods_defs"'
-      local _tmp_getter="${'"$attr_index"'}"
-      case "${'"$attr_index"'}" in
-        *"'"'"'"*)
-          _tmp_getter="$(__clash_quote "${'"$attr_index"'}"; printf x)"
-          _tmp_getter="${_tmp_getter%x}"
-          ;;
-      esac
       eval '"$func_prefix"'"$1"'"'_$1$func_suffix"' {'
           if "$__getattr__"; then
             attr_methods_defs="$attr_methods_defs"'
@@ -232,13 +231,35 @@ class() {
           '"'"'"$1"'"'"'__getattr__ '"$1"'
         fi'
           fi
-          attr_methods_defs="$attr_methods_defs"'
-        printf %s '"'"'"'"'"'$_tmp_getter'"'"'"'"'"'
+          if "$hybrid_mode"; then
+            attr_methods_defs="$attr_methods_defs"'
+        printf %s "$__clash_'"'"'"$1"'"'_$1"'"
+      }'"'"'
+      eval __clash_"$1"'"_$1"'='"'"'${'"$attr_index"'}'"'"
+          else
+            # __clash_quote is expensive, if there's no single quote we should
+            # avoid calling it.
+            attr_methods_defs='
+      local _tmp_getter_'"$1"'="${'"$attr_index"'}"
+      case "${'"$attr_index"'}" in
+        *"'"'"'"*)
+          _tmp_getter_'"$1"'="$(__clash_quote "${'"$attr_index"'}"; printf x)"
+          _tmp_getter_'"$1"'="${_tmp_getter_'"$1"'%x}"
+          ;;
+      esac
+      '"$attr_methods_defs"'
+        printf %s '"'"'"'"'"'$_tmp_getter_'"$1'"'"'"'"'
       }'"'"
+          fi
           attr_index="$((attr_index + 1))"
         fi
         delete_fn="$delete_fn"'
         unset -f '"'"'"$1"'"'"'_'"$1"'_is'
+        if "$hybrid_mode"; then
+          delete_fn="$delete_fn"'
+        unset __clash_'"'"'"$1"'"'"'_'"$1"
+        fi
+
         attr_methods_defs="$attr_methods_defs"'
       eval '"$func_prefix"'"$1"'"'_$1"'_is'"$func_suffix"' {'
         if "$__setattr__"; then
@@ -249,6 +270,14 @@ class() {
         if [ "$self" = '"'"'"$1"'"'"' ]; then
           '"$1"'="$1"
         fi
+        if "$hybrid_mode"; then
+          attr_methods_defs="$attr_methods_defs"'
+          __clash_'"'"'"$1"'"'"_$1='$1
+      }'"'"
+          attr_defs="$attr_defs"'
+        local '"$1"'="$__clash_'"'"'"$1"'"'_$1"'"'
+        else
+          attr_methods_defs="$attr_methods_defs"'
         local _tmp_getter="$1"
         case "$1" in
           *"'"'"'"'"'"'"'"'"'"*)
@@ -257,19 +286,20 @@ class() {
             ;;
         esac
         eval '"$func_prefix'"'"$1"'"'_$1'"'"'"'"'"'"'$func_suffix"' {'
-        if "$__getattr__"; then
-          attr_methods_defs="$attr_methods_defs"'
+          if "$__getattr__"; then
+            attr_methods_defs="$attr_methods_defs"'
         if "${__allow_getattr:-true}"; then
           '"'"'"$1"'"'"'__getattr__ '"$1"'
         fi'
-        fi
-        attr_methods_defs="$attr_methods_defs"'
+          fi
+          attr_methods_defs="$attr_methods_defs"'
           printf %s '"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'$_tmp_getter'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'"'
         }'"'"'"'"'"'"'"'"'
       }'"'"
-        attr_defs="$attr_defs"'
+          attr_defs="$attr_defs"'
           local '"$1"'="$('"'"'"$1"'"'_$1"'; printf x)"
           '"$1"'="${'"$1"'%x}"'
+        fi
         ;;
     esac
     nb_args="$((nb_args - 1))"
