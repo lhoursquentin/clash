@@ -8,7 +8,7 @@
 
 # Vector creation
 assert_true Vector myvector 'abc' 'def' 'ghi' 'jkl' 'mno' -- 'Failed vector creation'
-assert_out myvector_length_ -- 5
+assert_out myvector_length -- 5
 
 assert_out myvector_get 0 -- 'abc'
 assert_out myvector_get -0 -- 'abc'
@@ -33,29 +33,29 @@ assert_out myvector_print -- 'abc def ghi jkl mno
 assert_true myvector_clone cloned_vector -- 'Failed to clone vector'
 assert_out cloned_vector_print -- 'abc def ghi jkl mno 
 '
-assert_out cloned_vector_length_ -- 5
+assert_out cloned_vector_length -- 5
 del cloned_vector
 
 # Append elt
 assert_true myvector_append 'pql' -- 'Failed to append element'
-assert_out myvector_length_ -- 6
+assert_out myvector_length -- 6
 assert_out myvector_get 5 -- 'pql'
 assert_out myvector_print -- 'abc def ghi jkl mno pql 
 '
 
 # Insert middle elt
 assert_true myvector_insert 2 'middle' -- 'Failed to insert middle element'
-assert_out myvector_length_ -- 7
+assert_out myvector_length -- 7
 assert_out myvector_print -- 'abc def middle ghi jkl mno pql 
 '
 
 assert_true myvector_insert 0 'begin' -- 'Failed to insert element at the start'
-assert_out myvector_length_ -- 8
+assert_out myvector_length -- 8
 assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql 
 '
 
 assert_true myvector_insert 8 'end' -- 'Failed to insert element at the end'
-assert_out myvector_length_ -- 9
+assert_out myvector_length -- 9
 assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql end 
 '
 
@@ -64,7 +64,7 @@ assert_out myvector_get 3 -- 'middle'
 assert_true myvector_remove 'middle' -- 'Failed to remove middle element'
 assert_false myvector_remove 'middle' -- 'Element should have been removed'
 assert_out myvector_get 3 -- 'ghi'
-assert_out myvector_length_ -- 8
+assert_out myvector_length -- 8
 assert_out myvector_print -- 'begin abc def ghi jkl mno pql end 
 '
 
@@ -72,7 +72,7 @@ assert_out myvector_get 0 -- 'begin'
 assert_true myvector_remove 'begin' -- 'Failed to remove head element'
 assert_false myvector_remove 'begin' -- 'Element should have been removed'
 assert_out myvector_get 0 -- 'abc'
-assert_out myvector_length_ -- 7
+assert_out myvector_length -- 7
 assert_out myvector_print -- 'abc def ghi jkl mno pql end 
 '
 
@@ -80,7 +80,7 @@ assert_out myvector_get -1 -- 'end'
 assert_out myvector_get 6 -- 'end'
 assert_true myvector_remove 'end' -- 'Failed to remove tail element'
 assert_false myvector_remove 'end' -- 'Element should have been removed'
-assert_out myvector_length_ -- 6
+assert_out myvector_length -- 6
 assert_out myvector_get -1 -- 'pql'
 assert_out myvector_get 5 -- 'pql'
 assert_out myvector_print -- 'abc def ghi jkl mno pql 
@@ -89,14 +89,14 @@ assert_out myvector_print -- 'abc def ghi jkl mno pql
 # Pop middle elt
 assert_out myvector_get 2 -- 'ghi'
 assert_out myvector_pop 2 -- 'ghi'
-assert_out myvector_length_ -- 5
+assert_out myvector_length -- 5
 assert_out myvector_get 2 -- 'jkl'
 assert_out myvector_print -- 'abc def jkl mno pql 
 '
 
 assert_out myvector_get 0 -- 'abc'
 assert_out myvector_pop 0 -- 'abc'
-assert_out myvector_length_ -- 4
+assert_out myvector_length -- 4
 assert_out myvector_get 0 -- 'def'
 assert_out myvector_print -- 'def jkl mno pql 
 '
@@ -104,7 +104,7 @@ assert_out myvector_print -- 'def jkl mno pql
 assert_out myvector_get -1 -- 'pql'
 assert_out myvector_get 3 -- 'pql'
 assert_out myvector_pop -1 -- 'pql'
-assert_out myvector_length_ -- 3
+assert_out myvector_length -- 3
 assert_out myvector_get -1 -- 'mno'
 assert_out myvector_get 2 -- 'mno'
 assert_out myvector_print -- 'def jkl mno 
@@ -112,7 +112,7 @@ assert_out myvector_print -- 'def jkl mno
 
 # Change existing element value
 myvector_set 1 foo
-assert_out myvector_length_ -- 3
+assert_out myvector_length -- 3
 assert_out myvector_print -- 'def foo mno 
 '
 
@@ -123,7 +123,7 @@ Vector third_vector g h i
 assert_true first_vector_concat second_vector third_vector -- 'Failed to concat'
 del second_vector
 del third_vector
-assert_out first_vector_length_ -- 9
+assert_out first_vector_length -- 9
 assert_out first_vector_print -- 'a b c d e f g h i 
 '
 
@@ -151,7 +151,7 @@ IFS="$OLD_IFS"
 
 # Append multiple values
 assert_true myvector_append 'funk' 'folk' -- 'Failed to append multiple elts'
-assert_out myvector_length_ -- 5
+assert_out myvector_length -- 5
 assert_out myvector_print -- 'def foo mno funk folk 
 '
 
@@ -176,11 +176,11 @@ assert_false myvector_find false -- 'Find failed to return a non-zero value'
 assert_true myvector_filter filtered_vector regex_match 'f.*' -- 'Failed to filter'
 assert_out filtered_vector_print -- 'foo funk folk 
 '
-assert_out filtered_vector_length_ -- 3
+assert_out filtered_vector_length -- 3
 
 # Check that filtering with a non matching condition creates an empty vector
 assert_true myvector_filter filtered_vector_no_match false -- 'Failed to filter'
-assert_out filtered_vector_no_match_length_ -- 0
+assert_out filtered_vector_no_match_length -- 0
 
 first_letter() {
   tmp="${1#?}"
@@ -188,7 +188,7 @@ first_letter() {
 }
 # Try building a vector with the first letter of each node value
 assert_true myvector_map mapped_vector first_letter -- 'Failed to map'
-assert_out mapped_vector_length_ -- "$(myvector_length_)"
+assert_out mapped_vector_length -- "$(myvector_length)"
 assert_out mapped_vector_print -- 'd f m f f 
 '
 
@@ -199,7 +199,7 @@ assert_out myvector_reduce printf '%s -> %s' -- 'def -> foo -> mno -> funk -> fo
 assert_false myvector_is_empty -- 'is_empty should return non-zero'
 
 assert_true myvector_clear -- 'Failed to clear'
-assert_out myvector_length_ -- 0
+assert_out myvector_length -- 0
 
 # Check is_empty returns true after clear
 assert_true myvector_is_empty -- 'is_empty should return zero'
@@ -240,10 +240,10 @@ Vector foo a b c d a b c
 assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
 assert_out foo_print -- 'b c d a b c 
 '
-assert_out foo_length_ -- 6
+assert_out foo_length -- 6
 assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
 assert_out foo_print -- 'b d a b c 
 '
-assert_out foo_length_ -- 5
+assert_out foo_length -- 5
 
 end_tests

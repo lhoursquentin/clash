@@ -11,7 +11,7 @@ class Vector_node \
   value           \
 
 class Vector     \
-  length_        \
+  length         \
   _append        \
   _clear         \
   _clone         \
@@ -51,7 +51,7 @@ check_index_within_range() {
 
 get_positive_index() {
   if [ "$1" -lt 0 ]; then
-    printf %s "$((length_ + $1))"
+    printf %s "$((length + $1))"
   else
     printf %s "${1#-}" # remove - sign from -0
   fi
@@ -66,11 +66,11 @@ Vector_append() {
 
 Vector_clear() {
   local index=0
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     del "$self"_Vector_node_"$index"
     index="$((index + 1))"
   done
-  "$self"_length__is 0
+  "$self"_length_is 0
 }
 
 Vector_clone() {
@@ -90,7 +90,7 @@ Vector_filter() {
   Vector "$new_vector"
   local index=0
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
@@ -104,7 +104,7 @@ Vector_filter() {
 Vector_find() {
   local index=0
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
@@ -119,7 +119,7 @@ Vector_find() {
 Vector_foreach() {
   local index=0
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
     "$@" "$node_value"
@@ -128,7 +128,7 @@ Vector_foreach() {
 }
 
 Vector_get() {
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$length" || return
   local target_index="$(get_positive_index "$1")"
   local value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   value="${value%x}"
@@ -138,7 +138,7 @@ Vector_get() {
 Vector_index() {
   local index=0
   local value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     if [ "$("$self"_Vector_node_"$index"_value; printf x)" = "$1"x ]; then
       printf %s "$index"
       return 0
@@ -150,14 +150,14 @@ Vector_index() {
 }
 
 Vector_insert() {
-  check_index_within_range "$1" "$((length_ + 1))" || return
+  check_index_within_range "$1" "$((length + 1))" || return
   local target_index="$(get_positive_index "$1")"
   "$self"_shift_right_ "$target_index"
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
 
 Vector_is_empty() {
-  [ "$length_" -eq 0 ]
+  [ "$length" -eq 0 ]
 }
 
 Vector_map() {
@@ -167,7 +167,7 @@ Vector_map() {
   local index=0
   local node_value=
   local new_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
     new_value="$("$@" "$node_value"; printf x)"
@@ -179,7 +179,7 @@ Vector_map() {
 
 Vector_pop() {
   set -- "${1-0}"
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$length" || return
   local target_index="$(get_positive_index "$1")"
   local value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   value="${value%x}"
@@ -188,10 +188,10 @@ Vector_pop() {
 }
 
 Vector_pretty_print() {
-  printf '== %s == (length: %s)\n' "$self" "$length_"
+  printf '== %s == (length: %s)\n' "$self" "$length"
   local index=0
   local value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     value="$("$self"_Vector_node_"$index"_value; printf x)"
     value="${value%x}"
     printf '%s: %s\n' "$index" "$value"
@@ -233,7 +233,7 @@ Vector_reduce() {
   local node_value="$("$self"_Vector_node_0_value; printf x)"
   local accumulated_value="${node_value%x}"
   local index=1
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
     accumulated_value="$("$@" "$accumulated_value" "$node_value"; printf x)"
@@ -253,7 +253,7 @@ Vector_remove() {
 Vector_remove_if() {
   local index=0
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$self"_Vector_node_"$index"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
@@ -266,32 +266,32 @@ Vector_remove_if() {
 }
 
 Vector_set() {
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$length" || return
   local target_index="$(get_positive_index "$1")"
   local value="$("$self"_Vector_node_"$target_index"_value; printf x)"
   "$self"_Vector_node_"$target_index"_value_is "$2"
 }
 
 Vector_new_node_() {
-  local node_name="$self"_Vector_node_"$length_"
+  local node_name="$self"_Vector_node_"$length"
   Vector_node "$node_name" "$1"
-  "$self"_length__is "$((length_ + 1))"
+  "$self"_length_is "$((length + 1))"
 }
 
 Vector_shift_left_() {
   local index="$(($1 + 1))"
   local value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     value="$("$self"_Vector_node_"$index"_value; printf x)"
     "$self"_Vector_node_"$((index - 1))"_value_is "${value%x}"
     index="$((index + 1))"
   done
-  "$self"_length__is "$((length_ - 1))"
-  del "$self"_Vector_node_"$("$self"_length_)"
+  "$self"_length_is "$((length - 1))"
+  del "$self"_Vector_node_"$("$self"_length)"
 }
 
 Vector_shift_right_() {
-  local index="$((length_ - 1))"
+  local index="$((length - 1))"
   local target_index="$1"
   local value=
   "$self"_append ''
@@ -307,6 +307,6 @@ Vector__del__() {
 }
 
 Vector__init__() {
-  "$self"_length__is 0
+  "$self"_length_is 0
   "$self"_append "$@"
 }

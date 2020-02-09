@@ -16,8 +16,8 @@ class List_node \
   previous      \
 
 class List_view  \
+  length         \
   head_          \
-  length_        \
   tail_          \
   _sort          \
 
@@ -26,8 +26,8 @@ List_view_sort() {
 }
 
 class List       \
+  length         \
   head_          \
-  length_        \
   tail_          \
   _append        \
   _clear         \
@@ -68,7 +68,7 @@ check_index_within_range() {
 
 get_positive_index() {
   if [ "$1" -lt 0 ]; then
-    printf %s "$((length_ + $1))"
+    printf %s "$((length + $1))"
   else
     printf %s "${1#-}" # remove - sign from -0
   fi
@@ -87,7 +87,7 @@ List_clear() {
   local index=0
   local node="$head_"
   local next=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     next="$("$node"_next)"
     del "$node"
     node="$next"
@@ -95,7 +95,7 @@ List_clear() {
   done
   "$self"_head__is ''
   "$self"_tail__is ''
-  "$self"_length__is 0
+  "$self"_length_is 0
 }
 
 List_clone() {
@@ -116,7 +116,7 @@ List_filter() {
   local index=0
   local node="$head_"
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
@@ -132,7 +132,7 @@ List_find() {
   local index=0
   local node="$head_"
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
@@ -149,7 +149,7 @@ List_foreach() {
   local index=0
   local node="$head_"
   local node_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     "$@" "$node_value"
@@ -159,7 +159,7 @@ List_foreach() {
 }
 
 List_get() {
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$length" || return
   local target_index="$(get_positive_index "$1")"
   local index=0
   local node="$head_"
@@ -176,7 +176,7 @@ List_get() {
 List_index() {
   local index=0
   local node="$head_"
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     if [ "$("$node"_value; printf x)" = "$1"x ]; then
       printf %s "$index"
       return 0
@@ -189,7 +189,7 @@ List_index() {
 }
 
 List_insert() {
-  check_index_within_range "$1" "$((length_ + 1))" || return
+  check_index_within_range "$1" "$((length + 1))" || return
   local target_index="$(get_positive_index "$1")"
   local index=0
   local node="$head_"
@@ -209,11 +209,11 @@ List_insert() {
   elif [ "$node" = "$head_" ]; then
     "$self"_head__is "$node_id"
   fi
-  "$self"_length__is "$((length_ + 1))"
+  "$self"_length_is "$((length + 1))"
 }
 
 List_is_empty() {
-  [ "$length_" -eq 0 ]
+  [ "$length" -eq 0 ]
 }
 
 List_map() {
@@ -224,7 +224,7 @@ List_map() {
   local node="$head_"
   local node_value=
   local new_value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     new_value="$("$@" "$node_value"; printf x)"
@@ -237,7 +237,7 @@ List_map() {
 
 List_pop() {
   set -- "${1-0}"
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$length" || return
   local target_index="$(get_positive_index "$1")"
   local index=0
   local node="$head_"
@@ -261,17 +261,17 @@ List_pop() {
 
   local value="$("$node"_value; printf x)"
   value="${value%x}"
-  "$self"_length__is "$((length_ - 1))"
+  "$self"_length_is "$((length - 1))"
   del "$node"
   printf %s "$value"
 }
 
 List_pretty_print() {
-  printf '== %s == (length: %s)\n' "$self" "$length_"
+  printf '== %s == (length: %s)\n' "$self" "$length"
   local index=0
   local node="$head_"
   local value=
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     value="$("$node"_value; printf x)"
     value="${value%x}"
     printf '%s: %s\n' "$index" "$value"
@@ -315,7 +315,7 @@ List_reduce() {
   local accumulated_value="${node_value%x}"
   local node="$("$head_"_next)"
   local index=1
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     accumulated_value="$("$@" "$accumulated_value" "$node_value"; printf x)"
@@ -338,7 +338,7 @@ List_remove_if() {
   local node="$head_"
   local node_value=
   local prev_node="$head_"
-  while [ "$index" -lt "$length_" ]; do
+  while [ "$index" -lt "$length" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     if "$@" "$node_value"; then
@@ -352,7 +352,7 @@ List_remove_if() {
 }
 
 List_set() {
-  check_index_within_range "$1" "$length_" || return
+  check_index_within_range "$1" "$length" || return
   local target_index="$(get_positive_index "$1")"
   local index=0
   local node="$head_"
@@ -367,11 +367,11 @@ List_set() {
 # Some kind of merge sort
 # No new node is created, we make use of list "views"
 List_sort() {
-  if [ "$length_" -eq 0 ] || [ "$length_" -eq 1 ]; then
+  if [ "$length" -eq 0 ] || [ "$length" -eq 1 ]; then
     return
   fi
 
-  local mid_len="$((length_ / 2))"
+  local mid_len="$((length / 2))"
   local index=1
   local node="$head_"
   while [ "$index" -lt "$mid_len" ]; do
@@ -388,14 +388,14 @@ List_sort() {
   "$left"_head__is "$head_"
   "$left"_tail__is "$node"
   local left_length="$mid_len"
-  "$left"_length__is "$left_length"
+  "$left"_length_is "$left_length"
 
   local right="$(List_view_anonymous_id)"
   List_view "$right"
   "$right"_head__is "$("$node"_next)"
   "$right"_tail__is "$tail_"
-  local right_length="$((length_ - left_length))"
-  "$right"_length__is "$right_length"
+  local right_length="$((length - left_length))"
+  "$right"_length_is "$right_length"
 
   "$left"_sort
   "$right"_sort
@@ -454,17 +454,17 @@ List_sort() {
 
 List_append_node_() {
   "$1"_previous_is "$tail_"
-  if [ "$length_" -eq 0 ]; then
+  if [ "$length" -eq 0 ]; then
     "$self"_head__is "$1"
   else
     "$tail_"_next_is "$1"
   fi
   "$self"_tail__is "$1"
-  "$self"_length__is "$((length_ + 1))"
+  "$self"_length_is "$((length + 1))"
 }
 
 List_remove_node_() {
-  if [ "$length_" -gt 1 ]; then
+  if [ "$length" -gt 1 ]; then
     if [ "$1" = "$tail_" ]; then
       local prev_node="$("$1"_previous)"
       "$self"_tail__is "$prev_node"
@@ -481,7 +481,7 @@ List_remove_node_() {
     fi
   fi
   del "$1"
-  "$self"_length__is "$((length_ - 1))"
+  "$self"_length_is "$((length - 1))"
 }
 
 List__del__() {
@@ -489,6 +489,6 @@ List__del__() {
 }
 
 List__init__() {
-  "$self"_length__is 0
+  "$self"_length_is 0
   "$self"_append "$@"
 }

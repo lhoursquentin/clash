@@ -144,7 +144,7 @@ Test_run() {
   local index=0
   local node="$("$cmd_list_"_head_)"
   local node_value
-  while [ "$index" -lt "$("$cmd_list_"_length_)" ]; do
+  while [ "$index" -lt "$("$cmd_list_"_length)" ]; do
     node_value="$("$node"_value; printf x)"
     node_value="${node_value%x}"
     set -- "$@" "$node_value"
@@ -209,9 +209,9 @@ Test_suite_run() {
   "$tests_"_filter failed_tests run_test_helper
   printf '\033[1;37m=\033[0m \033[1;35mReport\033[0m - \033[1;34m%s\033[0m\n' "$self"
   if failed_tests_is_empty; then
-    printf '\033[1;32mPASS\033[0m - %s passed\n' "$("$tests_"_length_)"
+    printf '\033[1;32mPASS\033[0m - %s passed\n' "$("$tests_"_length)"
   else
-    printf '\033[1;31mFAIL\033[0m - %s/%s failed\n' "$(failed_tests_length_)" "$("$tests_"_length_)"
+    printf '\033[1;31mFAIL\033[0m - %s/%s failed\n' "$(failed_tests_length)" "$("$tests_"_length)"
     failed_tests_foreach print_report_helper
   fi
 }

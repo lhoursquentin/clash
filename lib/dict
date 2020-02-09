@@ -58,13 +58,12 @@ class Dict_hash_cache \
   hash                \
 
 class Dict       \
+  hash_function  \
+  length         \
   buckets_       \
-  hash_function_ \
   last_hashed_   \
-  length_        \
   _clear         \
   _get           \
-  _hash_function \
   _items         \
   _pretty_print  \
   _remove        \
@@ -75,7 +74,7 @@ class Dict       \
 Dict_clear() {
   "$buckets_"_foreach Dict_clean_bucket
   "$buckets_"_clear
-  "$self"_length__is 0
+  "$self"_length_is 0
   "$last_hashed_"_stale_is true
 }
 
@@ -84,7 +83,7 @@ Dict_get() {
      [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
     local hash_value="$("$last_hashed_"_hash)"
   else
-    local hash_value="$("$hash_function_" "$1")"
+    local hash_value="$("$hash_function" "$1")"
     "$last_hashed_"_key_is "$1"
     "$last_hashed_"_hash_is "$hash_value"
     "$last_hashed_"_stale_is false
@@ -105,30 +104,13 @@ Dict_get() {
   fi
 }
 
-# FIXME setting the hash function via a method is counter-intuitive compared to
-# clash general design
-Dict_hash_function() {
-  if [ "$hash_function_" = "$1" ]; then
-    printf 'Nothing to do, hash function already set to: %s\n' "$1" >&2
-    return 0
-  fi
-
-  if "$buckets_"_is_empty; then
-    "$("$self"_last_hashed_)"_stale_is true
-    "$self"_hash_function__is "$1"
-  else
-    echo 'Dict is not empty, cannot change hash function' >&2
-    return 1
-  fi
-}
-
 Dict_items() {
   List "$1"
   "$buckets_"_foreach "$1"_concat
 }
 
 Dict_pretty_print() {
-  printf '== %s == (nb buckets: %s)\n' "$self" "$("$buckets_"_length_)"
+  printf '== %s == (nb buckets: %s)\n' "$self" "$("$buckets_"_length)"
 
   (
     tuple_printer() {
@@ -144,7 +126,7 @@ Dict_remove() {
      [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
     local hash_value="$("$last_hashed_"_hash)"
   else
-    local hash_value="$("$hash_function_" "$1")"
+    local hash_value="$("$hash_function" "$1")"
     "$last_hashed_"_key_is "$1"
     "$last_hashed_"_hash_is "$hash_value"
     "$last_hashed_"_stale_is false
@@ -155,7 +137,7 @@ Dict_remove() {
     tuple_list="$("$node"_tuple_list_value)" &&
     "$tuple_list"_remove_if Dict_matching_tuple "$1" # removed tuple?
   then
-    "$self"_length__is "$((length_ - 1))"
+    "$self"_length_is "$((length - 1))"
     if "$tuple_list"_is_empty; then
       del "$tuple_list"
       "$buckets_"_remove_node_ "$node"_tuple_list
@@ -175,7 +157,7 @@ Dict_set() {
      [ "$("$last_hashed_"_key; printf x)" = "$1"x ]; then
     local hash_value="$("$last_hashed_"_hash)"
   else
-    local hash_value="$("$hash_function_" "$1")"
+    local hash_value="$("$hash_function" "$1")"
     "$last_hashed_"_key_is "$1"
     "$last_hashed_"_hash_is "$hash_value"
     "$last_hashed_"_stale_is false
@@ -183,7 +165,7 @@ Dict_set() {
   local node="$self"_node_"$hash_value" # 3 types tuple_list/{key,value}_$tuple_length
   local tuple_id="$(Dict_tuple_anonymous_id)"
   Dict_tuple "$tuple_id" "$1" "$2"
-  "$self"_length__is "$((length_ + 1))"
+  "$self"_length_is "$((length + 1))"
   if command -v "$node"_tuple_list_value > /dev/null; then # matching bucket?
     "$("$node"_tuple_list_value)"_append "$tuple_id"
   else
@@ -207,9 +189,8 @@ Dict__init__() {
   local list_id="$(List_anonymous_id)"
   List "$list_id"
   "$self"_buckets__is "$list_id"
-  # no need to use our wrapper here, the dict will always be empty at this point
-  "$self"_hash_function__is dummy_hash
-  "$self"_length__is 0
+  "$self"_hash_function_is dummy_hash
+  "$self"_length_is 0
 }
 
 # "Static" methods
