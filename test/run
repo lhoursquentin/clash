@@ -2,17 +2,56 @@
 
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
 
+usage() {
+ cat <<EOF
+Usage: ${0##*/} [ options ]
+
+Options:
+
+  -e, --errexit                run shells with errexit enabled
+  -h, --help                   print this help and exit
+  -y, --hybrid-mode            run clash in hybrid mode
+EOF
+   exit "${1-0}"
+}
+
+nb_args="$#"
+while [ "$nb_args" -gt 0 ]; do
+   case "$1" in
+      -h|--help) usage ;;
+      -y|--hybrid-mode) CLASH_HYBRID=true ;;
+      -e|--errexit) errexit=true ;;
+      -*)
+        {
+          printf '%s: unknown option\n' "$1"
+          usage 1
+        } >&2
+        ;;
+      *) set -- "$@" "$1" ;;
+   esac
+   shift
+   nb_args="$((nb_args - 1))"
+done
+
+: "${CLASH_HYBRID=false}"
+: "${errexit=false}"
+
 log="${CLASH_ROOT-.}"/test/run.log
 
 : > "$log"
 while IFS= read -r shell; do
+  if "$errexit"; then
+    shell="$shell -e"
+  fi
+  IFS=' '
+  # zsh won't like unquoted splitting, and if we assume some other shells can
+  # behave that way then we should avoid using a zsh specific solution
+  eval set -- "$shell"
+  IFS="$OLDIFS"
   while IFS= read -r test; do
-    export TIME="Time: $shell,$test,%e"
+    export TIME="shell='$shell' CLASH_HYBRID=$CLASH_HYBRID test=$test time=%e"
     OLDIFS="$IFS"
-    IFS=' '
-    set -- $shell ${errexit+-e}
-    printf '%s %s - ' "$*" "$test"
-    IFS="$OLDIFS"
+    printf '%s %s (hybrid: %s) - ' "$shell" "$test" "$CLASH_HYBRID"
     if assert_true time "$@" "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> "$log" 2>&1
     then
       printf '\033[1;32mOK\033[0m\n'
@@ -24,7 +63,8 @@ while IFS= read -r shell; do
 done < "${CLASH_ROOT-.}"/test/shells.txt
 
 end_tests && {
+  echo '=========================='
   date
-  printf commit:; git rev-parse HEAD
-  sed -n 's/^Time: \(.*\)/\1/p' "$log"
+  printf commit=; git rev-parse HEAD
+  grep '^shell=' "$log"
 } >> "${CLASH_ROOT-.}"/test/runtime.txt
