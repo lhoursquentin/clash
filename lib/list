@@ -213,7 +213,7 @@ List_insert() {
 }
 
 List_is_empty() {
-  [ "$length" -eq 0 ]
+  [ "$length" -eq 0 ] || return
 }
 
 List_map() {
@@ -242,27 +242,13 @@ List_pop() {
   local index=0
   local node="$head_"
   while [ "$index" -lt "$target_index" ]; do
-    prev_node="$node"
     node="$("$node"_next)"
     index="$((index + 1))"
   done
 
-  local next_node="$("$node"_next)"
-  if [ "$node" = "$tail_" ]; then
-    "$self"_tail__is "$prev_node"
-    "$prev_node"_next_is ''
-  elif [ "$node" = "$head_" ]; then
-    "$self"_head__is "$next_node"
-    "$next_node"_previous_is ''
-  else
-    "$prev_node"_next_is "$next_node"
-    "$next_node"_previous_is "$prev_node"
-  fi
-
   local value="$("$node"_value; printf x)"
   value="${value%x}"
-  "$self"_length_is "$((length - 1))"
-  del "$node"
+  "$self"_remove_node_ "$node"
   printf %s "$value"
 }
 
@@ -281,6 +267,9 @@ List_pretty_print() {
 }
 
 List_print() {
+  if "$self"_is_empty; then
+    return
+  fi
   (
     node_printer() {
       # let's assume there's no binary called $1_print that could cause a false
@@ -453,10 +442,10 @@ List_sort() {
 }
 
 List_append_node_() {
-  "$1"_previous_is "$tail_"
   if [ "$length" -eq 0 ]; then
     "$self"_head__is "$1"
   else
+    "$1"_previous_is "$tail_"
     "$tail_"_next_is "$1"
   fi
   "$self"_tail__is "$1"

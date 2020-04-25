@@ -138,6 +138,11 @@ assert_out mylist_print -- 'def jkl mno
 assert_out "$(mylist_head_)"_value -- 'def'
 assert_out "$(mylist_tail_)"_value -- 'mno'
 
+# Pop when there's a single element
+List single_elt_list foo
+assert_out single_elt_list_pop -- 'foo'
+assert_true single_elt_list_is_empty -- 'Failed to pop single elt list'
+
 # Change existing element value
 mylist_set 1 foo
 assert_out mylist_length -- 3
