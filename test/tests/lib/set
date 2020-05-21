@@ -6,21 +6,10 @@
 
 . "${CLASH_ROOT-.}"/lib/set || exit
 
-root=t
+Set s 0 8 -8 4 12 10 11 5 7 9 20 30 9
 
-RedBlackTree "$root" 0
-"$root"_insert 8
-"$root"_insert -8
-"$root"_insert 4
-"$root"_insert 12
-"$root"_insert 10
-"$root"_insert 11
-"$root"_insert 5
-"$root"_insert 7
-"$root"_insert 9
-"$root"_insert 20
-"$root"_insert 30
+s_print
 
-print_dot "$root" > /tmp/graph.gv
+print_dot "$(s_root_)" > /tmp/graph.gv
 dot -Tpng /tmp/graph.gv -o /tmp/graph.png
 feh /tmp/graph.png

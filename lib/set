@@ -12,6 +12,52 @@ if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
   exit 1
 fi >&2
 
+class Set  \
+  length   \
+  root_    \
+  _add     \
+  _print   \
+  _remove  \
+  __init__ \
+
+Set__init__() {
+  "$self"_length_is 0
+  if [ "$#" -gt 0 ]; then
+    "$self"_add "$@"
+  fi
+}
+
+Set_add() {
+  if [ "$#" -eq 0 ]; then
+    return 1
+  fi
+
+  if [ "$length" -eq 0 ]; then
+    local root="$(RedBlackTree_anonymous_id)"
+    RedBlackTree "$root" "$1"
+    shift
+  else
+    local root="$root_"
+  fi
+
+  local value=
+  for value do
+    if "$root"_insert "$value"; then
+      length="$((length + 1))"
+    fi
+  done
+
+  "$self"_length_is "$length"
+  "$self"_root__is "$root"
+}
+
+Set_print() {
+  if [ "$length" -gt 0 ]; then
+    "$root_"_print
+  fi
+  echo
+}
+
 class RedBlackTree \
   label            \
   color            \
@@ -80,15 +126,8 @@ RedBlackTree_rotate_right() {
 }
 
 RedBlackTree_insert() {
-  if [ -z "$label" ]; then
-    # Only possible with an empty tree
-    "$self"_label_is "$1"
-    root="$self"
-    return
-  fi
   if [ "$label" = "$1" ]; then
-    root="$self"
-    return
+    return 1
   elif [ "$label" -gt "$1" ]; then
     if [ -n "$left" ]; then
       "$left"_insert "$1"
@@ -181,7 +220,7 @@ RedBlackTree_is_right() {
 }
 
 RedBlackTree_print() {
-  printf '%slabel: %s, color: %s\n' "$padding" "$label" "$color"
+  printf '%s ' "$label"
   if [ -n "$left" ]; then
     "$left"_print
   fi
