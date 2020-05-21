@@ -1,0 +1,26 @@
+#!/bin/sh
+
+. "${CLASH_ROOT-.}"/test/testlib/assert || exit
+
+. "${CLASH_ROOT-.}"/clash || exit
+
+. "${CLASH_ROOT-.}"/lib/set || exit
+
+root=t
+
+RedBlackTree "$root" 0
+"$root"_insert 8
+"$root"_insert -8
+"$root"_insert 4
+"$root"_insert 12
+"$root"_insert 10
+"$root"_insert 11
+"$root"_insert 5
+"$root"_insert 7
+"$root"_insert 9
+"$root"_insert 20
+"$root"_insert 30
+
+print_dot "$root" > /tmp/graph.gv
+dot -Tpng /tmp/graph.gv -o /tmp/graph.png
+feh /tmp/graph.png

@@ -1,0 +1,223 @@
+#!/bin/sh
+
+# shebang for coloration, this should only be sourced
+
+# Semi translation from python to clash of
+# https://github.com/TheAlgorithms/Python/blob/master/data_structures/binary_tree/red_black_tree.py
+# which is itself inspired by red black trees wikipedia page
+# https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+
+if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
+  echo 'Could not locate clash'
+  exit 1
+fi >&2
+
+class RedBlackTree \
+  label            \
+  color            \
+  parent           \
+  left             \
+  right            \
+  _grandparent     \
+  _insert          \
+  __insert_repair  \
+  _is_left         \
+  _is_right        \
+  _rotate_left     \
+  _rotate_right    \
+  _sibling         \
+  _print           \
+  _pprint          \
+  _print_dot       \
+  __init__         \
+
+RedBlackTree__init__() {
+  "$self"_label_is "$1"
+  "$self"_color_is "${2-0}"
+  "$self"_parent_is "$3"
+  "$self"_left_is "$4"
+  "$self"_right_is "$5"
+}
+
+RedBlackTree_rotate_left() {
+  local pparent="$parent"
+  local pright="$right"
+  "$self"_right_is "$("$pright"_left)"
+  if [ -n "$right" ]; then
+    "$right"_parent_is "$self"
+  fi
+  "$self"_parent_is "$pright"
+  "$pright"_left_is "$self"
+  if [ -n "$pparent" ]; then
+    if [ "$("$pparent"_left)" = "$self" ]; then
+      "$pparent"_left_is "$pright"
+    else
+      "$pparent"_right_is "$pright"
+    fi
+  fi
+  "$pright"_parent_is "$pparent"
+  root="$pright"
+}
+
+RedBlackTree_rotate_right() {
+  local pparent="$parent"
+  local pleft="$left"
+  "$self"_left_is "$("$pleft"_right)"
+  if [ -n "$left" ]; then
+    "$left"_parent_is "$self"
+  fi
+  "$self"_parent_is "$pleft"
+  "$pleft"_right_is "$self"
+  if [ -n "$pparent" ]; then
+    if [ "$("$pparent"_right)" = "$self" ]; then
+      "$pparent"_right_is "$pleft"
+    else
+      "$pparent"_left_is "$pleft"
+    fi
+  fi
+  "$pleft"_parent_is "$pparent"
+  root="$pleft"
+}
+
+RedBlackTree_insert() {
+  if [ -z "$label" ]; then
+    # Only possible with an empty tree
+    "$self"_label_is "$1"
+    root="$self"
+    return
+  fi
+  if [ "$label" = "$1" ]; then
+    root="$self"
+    return
+  elif [ "$label" -gt "$1" ]; then
+    if [ -n "$left" ]; then
+      "$left"_insert "$1"
+    else
+      local new_node="$(RedBlackTree_anonymous_id)"
+      RedBlackTree "$new_node" "$1" 1 "$self"
+      "$self"_left_is "$new_node"
+      "$left"__insert_repair
+    fi
+  else
+    if [ -n "$right" ]; then
+      "$right"_insert "$1"
+    else
+      local new_node="$(RedBlackTree_anonymous_id)"
+      RedBlackTree "$new_node" "$1" 1 "$self"
+      "$self"_right_is "$new_node"
+      "$right"__insert_repair
+    fi
+  fi
+
+  # local var might have diverged from self_var due to rotation
+  parent="$("$self"_parent)"
+  if [ -n "$parent" ]; then
+    root="$parent"
+  else
+    root="$self"
+  fi
+}
+
+RedBlackTree__insert_repair() {
+  if [ -z "$parent" ]; then
+    # This node = the root so it just needs to be black
+    "$self"_color_is 0
+  elif [ "$(color "$parent")" = 0 ]; then
+    # If the "$parent" = black then it just needs to be red
+    "$self"_color_is 1
+  else
+    local uncle="$("$parent"_sibling)"
+    if [ "$(color "$uncle")" = 0 ]; then
+      # watch out for local var divergence, for instance after rotation "$left"
+      # might not be equal to "$self"_left anymore
+      if "$self"_is_left && "$parent"_is_right; then
+        "$parent"_rotate_right
+        "$("$self"_right)"__insert_repair
+      elif "$self"_is_right && "$parent"_is_left; then
+        "$parent"_rotate_left
+        "$("$self"_left)"__insert_repair
+      elif "$self"_is_left; then
+        "$("$self"_grandparent)"_rotate_right
+        parent="$("$self"_parent)"
+        "$parent"_color_is 0
+        "$("$parent"_right)"_color_is 1
+      else
+        "$("$self"_grandparent)"_rotate_left
+        parent="$("$self"_parent)"
+        "$parent"_color_is 0
+        "$("$parent"_left)"_color_is 1
+      fi
+    else
+      "$parent"_color_is 0
+      "$uncle"_color_is 0
+      "$("$self"_grandparent)"_color_is 1
+      "$("$self"_grandparent)"__insert_repair
+    fi
+  fi
+}
+
+RedBlackTree_grandparent() {
+  if [ -n "$parent" ]; then
+    "$parent"_parent
+  fi
+}
+
+RedBlackTree_sibling() {
+  if [ -z "$parent" ]; then
+    return
+  elif [ "$("$parent"_left)" = "$self" ]; then
+    "$parent"_right
+  else
+    "$parent"_left
+  fi
+}
+
+RedBlackTree_is_left() {
+  [ -n "$parent" ] && [ "$("$parent"_left)" = "$self" ]
+}
+
+RedBlackTree_is_right() {
+  [ -n "$parent" ] && [ "$("$parent"_right)" = "$self" ]
+}
+
+RedBlackTree_print() {
+  printf '%slabel: %s, color: %s\n' "$padding" "$label" "$color"
+  if [ -n "$left" ]; then
+    "$left"_print
+  fi
+  if [ -n "$right" ]; then
+    "$right"_print
+  fi
+}
+
+RedBlackTree_print_dot() {
+  if [ "$color" = 0 ]; then
+    local color_name='black'
+  else
+    local color_name='red'
+  fi
+
+  printf '%s [color=%s,label="%s"];\n' "$self" "$color_name" "$label"
+  if [ -n "$left" ]; then
+    "$left"_print_dot
+    printf '%s -> %s;\n' "$self" "$left"
+  fi
+  if [ -n "$right" ]; then
+    "$right"_print_dot
+    printf '%s -> %s;\n' "$self" "$right"
+  fi
+}
+
+print_dot() {
+  printf 'digraph %s {\n' "$1"
+  "$1"_print_dot
+  echo '}'
+}
+
+color() {
+  if [ -z "$1" ]; then
+    echo 0
+  else
+    "$1"_color
+  fi
+}
