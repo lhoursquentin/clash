@@ -40,15 +40,19 @@ Set_add() {
     local root="$root_"
   fi
 
+  local ret=0
   local value=
   for value do
     if "$root"_insert "$value"; then
       length="$((length + 1))"
+    else
+      ret=1
     fi
   done
 
   "$self"_length_is "$length"
   "$self"_root__is "$root"
+  return "$ret"
 }
 
 Set_print() {
@@ -63,16 +67,20 @@ Set_remove() {
     return 1
   fi
 
+  local ret=0
   local root="$root_"
   local value=
   for value do
     if "$root"_remove "$value"; then
       length="$((length - 1))"
+    else
+      ret=1
     fi
   done
 
   "$self"_length_is "$length"
   "$self"_root__is "$root"
+  return "$ret"
 }
 
 class RedBlackTree \
@@ -215,7 +223,6 @@ RedBlackTree__insert_repair() {
   fi
 }
 
-# FIXME missing actual node deletion
 RedBlackTree_remove() {
   if [ "$label" = "$1" ]; then
     if [ -n "$left" ] && [ -n "$right" ]; then
@@ -227,6 +234,7 @@ RedBlackTree_remove() {
       "$left"_remove "$value"
       local parent="$("$self"_parent)"
     else
+      local node_to_free=
       # This node has at most one non-None child so we don't
       # need to replace
       if [ -n "$left" ]; then
@@ -244,14 +252,12 @@ RedBlackTree_remove() {
         else
           "$parent"_right_is ''
         fi
+        node_to_free="$self"
       else
         # The node is black
         if [ -z "$child" ]; then
           # This node and its child are black
-          if [ -z "$parent" ]; then
-            # The tree is now empty
-            return
-          else
+          if [ -n "$parent" ]; then
             "$self"__remove_repair
             local parent="$("$self"_parent)"
             if "$self"_is_left; then
@@ -261,6 +267,7 @@ RedBlackTree_remove() {
             fi
             "$self"_parent_is ''
           fi
+          node_to_free="$self"
         else
           # This node is black and its child is red
           # Move the child node here and make it black
@@ -273,8 +280,10 @@ RedBlackTree_remove() {
           if [ -n "$right" ]; then
             "$right"_parent_is "$self"
           fi
+          node_to_free="$child"
         fi
       fi
+      del "$node_to_free"
     fi
   elif [ "$label" -gt "$1" ]; then
     left="$("$self"_left)"

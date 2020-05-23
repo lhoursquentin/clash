@@ -22,6 +22,7 @@ s_print
 
 s_remove 10
 s_remove 11
+s_remove 42
 s_remove 5
 s_remove 20
 
