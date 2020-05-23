@@ -58,12 +58,30 @@ Set_print() {
   echo
 }
 
+Set_remove() {
+  if [ "$#" -ne 1 ] || [ "$length" -eq 0 ]; then
+    return 1
+  fi
+
+  local root="$root_"
+  local value=
+  for value do
+    if "$root"_remove "$value"; then
+      length="$((length - 1))"
+    fi
+  done
+
+  "$self"_length_is "$length"
+  "$self"_root__is "$root"
+}
+
 class RedBlackTree \
   label            \
   color            \
   parent           \
   left             \
   right            \
+  _get_max         \
   _grandparent     \
   _insert          \
   __insert_repair  \
@@ -75,6 +93,8 @@ class RedBlackTree \
   _print           \
   _pprint          \
   _print_dot       \
+  _remove          \
+  __remove_repair  \
   __init__         \
 
 RedBlackTree__init__() {
@@ -192,6 +212,169 @@ RedBlackTree__insert_repair() {
       "$("$self"_grandparent)"_color_is 1
       "$("$self"_grandparent)"__insert_repair
     fi
+  fi
+}
+
+# FIXME missing actual node deletion
+RedBlackTree_remove() {
+  if [ "$label" = "$1" ]; then
+    if [ -n "$left" ] && [ -n "$right" ]; then
+      # It's easier to balance a node with at most one child,
+      # so we replace this node with the greatest one less than
+      # it and remove that
+      local value="$("$left"_get_max)"
+      "$self"_label_is "$value"
+      "$left"_remove "$value"
+      local parent="$("$self"_parent)"
+    else
+      # This node has at most one non-None child so we don't
+      # need to replace
+      if [ -n "$left" ]; then
+        local child="$left"
+      else
+        local child="$right"
+      fi
+      if [ "$color" = 1 ]; then
+        # This node is red and its child is black
+        # The only way this happens to a node with one child
+        # is if both children are None leaves.
+        # We can just remove this node and call it a day.
+        if "$self"_is_left; then
+          "$parent"_left_is ''
+        else
+          "$parent"_right_is ''
+        fi
+      else
+        # The node is black
+        if [ -z "$child" ]; then
+          # This node and its child are black
+          if [ -z "$parent" ]; then
+            # The tree is now empty
+            return
+          else
+            "$self"__remove_repair
+            local parent="$("$self"_parent)"
+            if "$self"_is_left; then
+              "$parent"_left_is ''
+            else
+              "$parent"_right_is ''
+            fi
+            "$self"_parent_is ''
+          fi
+        else
+          # This node is black and its child is red
+          # Move the child node here and make it black
+          "$self"_label_is "$("$child"_label)"
+          "$self"_left_is "$("$child"_left)"
+          "$self"_right_is "$("$child"_right)"
+          if [ -n "$left" ]; then
+            "$left"_parent_is "$self"
+          fi
+          if [ -n "$right" ]; then
+            "$right"_parent_is "$self"
+          fi
+        fi
+      fi
+    fi
+  elif [ "$label" -gt "$1" ]; then
+    left="$("$self"_left)"
+    if [ -n "$left" ]; then
+      "$left"_remove "$1" || return
+    else
+      return 1
+    fi
+  else
+    right="$("$self"_right)"
+    if [ -n "$right" ]; then
+      "$right"_remove "$1" || return
+    else
+      return 1
+    fi
+  fi
+  if [ -n "$parent" ]; then
+    root="$parent"
+  else
+    root="$self"
+  fi
+}
+
+RedBlackTree__remove_repair() {
+  if [ "$(color "$("$self"_sibling)")" = 1 ]; then
+    "$("$self"_sibling)"_color_is 0
+    "$parent"_color_is 1
+    if "$self"_is_left; then
+      "$parent"_rotate_left
+    else
+      "$parent"_rotate_right
+    fi
+  fi
+
+  if [ "$(color "$("$self"_parent)")" = 0 ] &&
+    [ "$(color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_left)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_right)")" = 0 ]
+  then
+    "$("$self"_sibling)"_color_is 1
+    "$("$self"_parent)"__remove_repair
+    return
+  fi
+
+  if [ "$(color "$("$self"_parent)")" = 1 ] &&
+    [ "$(color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_left)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_right)")" = 0 ]
+  then
+    "$("$self"_sibling)"_color_is 1
+    "$("$self"_parent)"_color_is 0
+    return
+  fi
+
+  if "$self"_is_left &&
+    [ "$(color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_left)")" = 1 ] &&
+    [ "$(color "$("$("$self"_sibling)"_right)")" = 0 ]
+  then
+    "$("$self"_sibling)"_rotate_right
+    "$("$self"_sibling)"_color_is 0
+    "$("$("$self"_sibling)"_right)"_color_is 1
+  fi
+
+  if "$self"_is_right &&
+    [ "$(color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_left)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_right)")" = 1 ]
+  then
+    "$("$self"_sibling)"_rotate_left
+    "$("$self"_sibling)"_color_is 0
+    "$("$("$self"_sibling)"_left)"_color_is 1
+  fi
+
+  if "$self"_is_left &&
+    [ "$(color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_right)")" = 1 ]
+  then
+    "$("$self"_parent)"_rotate_left
+    "$("$self"_grandparent)"_color_is "$("$("$self"_parent)"_color)"
+    "$("$self"_parent)"_color_is 0
+    "$("$("$self"_parent)"_sibling)"_color_is 0
+  fi
+
+  if "$self"_is_right &&
+    [ "$(color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(color "$("$("$self"_sibling)"_left)")" = 1 ]
+  then
+    "$("$self"_parent)"_rotate_right
+    "$("$self"_grandparent)"_color_is "$("$("$self"_parent)"_color)"
+    "$("$self"_parent)"_color_is 0
+    "$("$("$self"_parent)"_sibling)"_color_is 0
+  fi
+}
+
+RedBlackTree_get_max() {
+  if [ -n "$right" ]; then
+    "$right"_get_max
+  else
+    printf %s "$label"
   fi
 }
 

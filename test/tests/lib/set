@@ -1,15 +1,29 @@
 #!/bin/sh
 
+show_tree() {
+  print_dot "$("$1"_root_)" > /tmp/graph.gv
+  dot -Tpng /tmp/graph.gv -o /tmp/graph.png
+  feh /tmp/graph.png
+}
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
 
 . "${CLASH_ROOT-.}"/clash || exit
 
 . "${CLASH_ROOT-.}"/lib/set || exit
 
+run() {
+  printf '%s\n' "$*"
+  "$@"
+}
+
 Set s 0 8 -8 4 12 10 11 5 7 9 20 30 9
 
 s_print
 
-print_dot "$(s_root_)" > /tmp/graph.gv
-dot -Tpng /tmp/graph.gv -o /tmp/graph.png
-feh /tmp/graph.png
+s_remove 10
+s_remove 11
+s_remove 5
+s_remove 20
+
+s_print
+show_tree s
