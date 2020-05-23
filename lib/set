@@ -2,10 +2,7 @@
 
 # shebang for coloration, this should only be sourced
 
-# Semi translation from python to clash of
-# https://github.com/TheAlgorithms/Python/blob/master/data_structures/binary_tree/red_black_tree.py
-# which is itself inspired by red black trees wikipedia page
-# https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+# Sorted set (red-black tree based)
 
 if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
   echo 'Could not locate clash'
@@ -83,6 +80,13 @@ Set_remove() {
   return "$ret"
 }
 
+# Semi translation from python to clash of the red black tree implementation of
+# https://github.com/TheAlgorithms/Python
+# which is itself inspired by red black trees wikipedia page
+# https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+
+# Such a big class is really inefficient for recursive data structures
+
 class RedBlackTree \
   label            \
   color            \
@@ -99,7 +103,6 @@ class RedBlackTree \
   _rotate_right    \
   _sibling         \
   _print           \
-  _pprint          \
   _print_dot       \
   _remove          \
   __remove_repair  \
@@ -189,12 +192,12 @@ RedBlackTree__insert_repair() {
   if [ -z "$parent" ]; then
     # This node = the root so it just needs to be black
     "$self"_color_is 0
-  elif [ "$(color "$parent")" = 0 ]; then
+  elif [ "$(rbt_color "$parent")" = 0 ]; then
     # If the "$parent" = black then it just needs to be red
     "$self"_color_is 1
   else
     local uncle="$("$parent"_sibling)"
-    if [ "$(color "$uncle")" = 0 ]; then
+    if [ "$(rbt_color "$uncle")" = 0 ]; then
       # watch out for local var divergence, for instance after rotation "$left"
       # might not be equal to "$self"_left anymore
       if "$self"_is_left && "$parent"_is_right; then
@@ -308,7 +311,7 @@ RedBlackTree_remove() {
 }
 
 RedBlackTree__remove_repair() {
-  if [ "$(color "$("$self"_sibling)")" = 1 ]; then
+  if [ "$(rbt_color "$("$self"_sibling)")" = 1 ]; then
     "$("$self"_sibling)"_color_is 0
     "$parent"_color_is 1
     if "$self"_is_left; then
@@ -318,20 +321,20 @@ RedBlackTree__remove_repair() {
     fi
   fi
 
-  if [ "$(color "$("$self"_parent)")" = 0 ] &&
-    [ "$(color "$("$self"_sibling)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_left)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_right)")" = 0 ]
+  if [ "$(rbt_color "$("$self"_parent)")" = 0 ] &&
+    [ "$(rbt_color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_left)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_right)")" = 0 ]
   then
     "$("$self"_sibling)"_color_is 1
     "$("$self"_parent)"__remove_repair
     return
   fi
 
-  if [ "$(color "$("$self"_parent)")" = 1 ] &&
-    [ "$(color "$("$self"_sibling)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_left)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_right)")" = 0 ]
+  if [ "$(rbt_color "$("$self"_parent)")" = 1 ] &&
+    [ "$(rbt_color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_left)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_right)")" = 0 ]
   then
     "$("$self"_sibling)"_color_is 1
     "$("$self"_parent)"_color_is 0
@@ -339,9 +342,9 @@ RedBlackTree__remove_repair() {
   fi
 
   if "$self"_is_left &&
-    [ "$(color "$("$self"_sibling)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_left)")" = 1 ] &&
-    [ "$(color "$("$("$self"_sibling)"_right)")" = 0 ]
+    [ "$(rbt_color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_left)")" = 1 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_right)")" = 0 ]
   then
     "$("$self"_sibling)"_rotate_right
     "$("$self"_sibling)"_color_is 0
@@ -349,9 +352,9 @@ RedBlackTree__remove_repair() {
   fi
 
   if "$self"_is_right &&
-    [ "$(color "$("$self"_sibling)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_left)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_right)")" = 1 ]
+    [ "$(rbt_color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_left)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_right)")" = 1 ]
   then
     "$("$self"_sibling)"_rotate_left
     "$("$self"_sibling)"_color_is 0
@@ -359,8 +362,8 @@ RedBlackTree__remove_repair() {
   fi
 
   if "$self"_is_left &&
-    [ "$(color "$("$self"_sibling)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_right)")" = 1 ]
+    [ "$(rbt_color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_right)")" = 1 ]
   then
     "$("$self"_parent)"_rotate_left
     "$("$self"_grandparent)"_color_is "$("$("$self"_parent)"_color)"
@@ -369,8 +372,8 @@ RedBlackTree__remove_repair() {
   fi
 
   if "$self"_is_right &&
-    [ "$(color "$("$self"_sibling)")" = 0 ] &&
-    [ "$(color "$("$("$self"_sibling)"_left)")" = 1 ]
+    [ "$(rbt_color "$("$self"_sibling)")" = 0 ] &&
+    [ "$(rbt_color "$("$("$self"_sibling)"_left)")" = 1 ]
   then
     "$("$self"_parent)"_rotate_right
     "$("$self"_grandparent)"_color_is "$("$("$self"_parent)"_color)"
@@ -412,10 +415,11 @@ RedBlackTree_is_right() {
 }
 
 RedBlackTree_print() {
-  printf '%s ' "$label"
   if [ -n "$left" ]; then
     "$left"_print
   fi
+  # in-order traversal
+  printf '%s ' "$label"
   if [ -n "$right" ]; then
     "$right"_print
   fi
@@ -439,13 +443,15 @@ RedBlackTree_print_dot() {
   fi
 }
 
-print_dot() {
+# Helpers
+
+rbt_print_dot() {
   printf 'digraph %s {\n' "$1"
   "$1"_print_dot
   echo '}'
 }
 
-color() {
+rbt_color() {
   if [ -z "$1" ]; then
     echo 0
   else
