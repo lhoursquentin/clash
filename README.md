@@ -1,5 +1,5 @@
 # Clash
-Portable shell oriented-object programming
+Portable shell object-oriented programming
 
 # Index
 
@@ -21,7 +21,7 @@ Portable shell oriented-object programming
 Define classes and instantiate objects in shell with the usual shell functions
 syntax.
 
-Compatible with most Bourne like shells like bash/dash/ksh/zsh
+Compatible with most Bourne like shells like bash/dash/ksh/osh/zsh
 
 Basic demo of how **clash** works [here](https://lhoursquentin.github.io/clash-web-demo/)
 
@@ -195,9 +195,9 @@ Note: this code can be found in the `examples` directory.
 # Why
 
 Gathering and organizing data can be painful and dirty in shell, especially when avoiding non-portable features like arrays/maps.
-Object-oriented programming is the solution to those issues, but does not exist natively in shell.
+Object-oriented programming is one solution to those issues, but does not exist natively in shell.
 
-The goal of this framework to provide a simple solution to the missing object paradigm and to be as portable as possible (working with **dash**/**bash**/**ksh**/**zsh**/**busybox ash**), the only non POSIX feature used being `local` (more info in the **notes** section).
+The goal of this project to provide a simple solution to the missing object paradigm and to be as portable as possible (working with **dash**/**bash**/**ksh**/**zsh**/**busybox ash**), the only non POSIX feature used being `local` (more info in the **notes** section).
 
 Most importantly the syntax to create and use classes and objects is the exact same as usual shell, and that is because  what clash does is only generate functions, almost no parsing is done, and the grammar isn't altered using aliases.
 
@@ -472,7 +472,7 @@ pattern of `${obj}_attr` is something you encounter all the time, once you pass
 a variable name as a parameter of a function, how do you directly use its
 original global variable name? You can't.
 
-This is especially true for object oriented programming, how do you make use of
+This is especially true for object-oriented programming, how do you make use of
 `$self`? You can't use a full object name in class methods either, or else it
 would only work for a specific instance and breaks the whole point of classes
 being a generic model.
@@ -562,7 +562,7 @@ So basically we want this to expand first to:
   truck_song_playing=$1
 ```
 
-Simple enough, single quote your variable so that it get expanded **after**
+Simple enough, single quote your variable so that it gets expanded **after**
 `eval` first expansion:
 
 
@@ -576,8 +576,10 @@ to create functions, which is **clash** `<obj_attr>_is` method whole point.
 
 Using variables is not all bad though, if used internally it would definitely
 improve a few things, including speeding up methods by avoiding one command
-substitution per attribute when setting up the method context. This is
-definitely something that might be worth trying in a later version at least.
+substitution per attribute when setting up the method context. This strategy is
+available in **clash**, but disabled by default since performance improvement
+was not as meaningful as expected (to use it set `CLASH_HYBRID=true` in the
+shell environment).
 
 Also one thing to note is that using variables would mean bypassing `getattr`
 and `setattr` hooks when using direct access, which would defeat their purpose.
@@ -607,4 +609,4 @@ not POSIX compliant, it didn't even support functions.
 # Notes
 
 - Using `local` (`typeset` for **ksh**) was a hard choice, considering it was the only thing preventing the framework to be strict POSIX compliant, but `local` can be really handy to avoid flooding all the frames with definitions and most importantly `local` prevents lower frames from overwriting upper frames variables values when using recursion.
-- This project was inspired by the amazing **bash-oo-framework** (https://github.com/niieani/bash-oo-framework), which is a huge project aiming to provide modern features to bash. While oriented object programming works perfectly well in **bash-oo-framework**, it diverges from the usual shell syntax to provide type safety and other cool features, it almost feels like a different language, which can take some time to learn. This was the motivation to write something closer to the shell syntax and more portable.
+- This project was inspired by the amazing **bash-oo-framework** (https://github.com/niieani/bash-oo-framework), which is a huge project aiming to provide modern features to bash. While object-oriented programming works perfectly well in **bash-oo-framework**, it diverges from the usual shell syntax to provide type safety and other cool features, it almost feels like a different language, which can take some time to learn. This was the motivation to write something closer to the shell syntax and more portable.
