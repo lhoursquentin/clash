@@ -43,6 +43,7 @@ while IFS= read -r shell; do
   if "$errexit"; then
     shell="$shell -e"
   fi
+  OLDIFS="$IFS"
   IFS=' '
   # zsh won't like unquoted splitting, and if we assume some other shells can
   # behave that way then we should avoid using a zsh specific solution
@@ -50,7 +51,6 @@ while IFS= read -r shell; do
   IFS="$OLDIFS"
   while IFS= read -r test; do
     export TIME="shell='$shell' CLASH_HYBRID=$CLASH_HYBRID test=$test time=%e"
-    OLDIFS="$IFS"
     printf '%s %s (hybrid: %s) - ' "$shell" "$test" "$CLASH_HYBRID"
     if assert_true time "$@" "${CLASH_ROOT-.}/test/$test" -- "$shell failed $test" >> "$log" 2>&1
     then
