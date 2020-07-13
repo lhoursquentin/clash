@@ -1,5 +1,5 @@
 # Clash
-Portable shell object-oriented programming
+Portable object-oriented shell programming
 
 # Index
 
@@ -58,6 +58,7 @@ different shells.
 | [bash](https://www.gnu.org/software/bash)                 | 3.0 / 4.4 / 5.0           | Full                 |
 | [busybox](https://busybox.net)                            | 1.28 (ash w/ bash compat) | Full                 |
 | [dash](https://en.wikipedia.org/wiki/Almquist_shell#dash) | 0.5.10.2                  | Full                 |
+| [FreeBSD sh](https://www.freebsd.org/cgi/man.cgi?query=sh)| FreeBSD 12.1 release      | Full                 |
 | [ksh](https://en.wikipedia.org/wiki/KornShell)            | AT&T 93u+ (2012)          | clash 100%, lib 50%  |
 | [mksh](http://www.mirbsd.org/mksh.htm)                    | R57                       | Full                 |
 | [osh](https://www.oilshell.org)                           | 0.6.0                     | Full                 |
