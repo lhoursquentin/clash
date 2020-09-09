@@ -1,15 +1,16 @@
 #!/bin/sh
 
 show_tree() {
-  print_dot "$("$1"_root_)" > /tmp/graph.gv
+  rbt_print_dot "$("$1"_root_)" > /tmp/graph.gv
   dot -Tpng /tmp/graph.gv -o /tmp/graph.png
   feh /tmp/graph.png
 }
+
 . "${CLASH_ROOT-.}"/test/testlib/assert || exit
 
 . "${CLASH_ROOT-.}"/clash || exit
 
-. "${CLASH_ROOT-.}"/lib/set || exit
+. "${CLASH_ROOT-.}"/examples/set/set || exit
 
 run() {
   printf '%s\n' "$*"
