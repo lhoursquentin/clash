@@ -1,13 +1,6 @@
 #!/bin/sh
 
-########################################
-# This is an example test library with clash.
-
-# NOTE: This is a work in progress, for simpler examples please see `car' and
-# `btree'.
-
-# Right below is the example of the implementation of the test lib, a little
-# further a small usage example of this library can be found.
+# shebang for coloration, this should only be sourced
 
 if ! [ -f "${CLASH_ROOT-.}"/clash ]; then
   echo 'Could not locate clash'
@@ -17,11 +10,12 @@ fi >&2
 . "${CLASH_ROOT-.}"/clash
 
 . "${CLASH_ROOT-.}"/lib/list || exit
+. "${CLASH_ROOT-.}"/lib/utils/command || exit
 
 class Test              \
   checker_list_         \
   checkers_report_file_ \
-  cmd_list_             \
+  cmd_                  \
   description_          \
   err_file_             \
   out_file_             \
@@ -114,12 +108,12 @@ Test_check_ret_not_equal() {
 }
 
 Test__init__() {
-  local cmd_list_id="$(List_anonymous_id)"
-  List "$cmd_list_id" "$@"
+  local cmd_id="$(Command_anonymous_id)"
+  Command "$cmd_id" "$@"
   local checker_list_id="$(List_anonymous_id)"
   List "$checker_list_id"
   "$self"_checker_list__is "$checker_list_id"
-  "$self"_cmd_list__is "$cmd_list_id"
+  "$self"_cmd__is "$cmd_id"
   # FIXME mktemp is not POSIX, this restricts the portability of the testsuite
   "$self"_checkers_report_file__is "$(mktemp)"
   "$self"_err_file__is "$(mktemp)"
@@ -141,18 +135,8 @@ Test_check_failed_() {
 }
 
 Test_run() {
-  local index=0
-  local node="$("$cmd_list_"_head_)"
-  local node_value
-  while [ "$index" -lt "$("$cmd_list_"_length)" ]; do
-    node_value="$("$node"_value; printf x)"
-    node_value="${node_value%x}"
-    set -- "$@" "$node_value"
-    node="$("$node"_next)"
-    index="$((index + 1))"
-  done
-  printf '\033[1;37m|\033[0m \033[1m%s\033[0m - %s' "$self" "$*"
-  "$@" > "$out_file_" 2> "$err_file_"
+  printf '\033[1;37m|\033[0m \033[1m%s\033[0m - %s' "$self" "$("$cmd_"_print)"
+  "$cmd_"_run > "$out_file_" 2> "$err_file_"
   "$self"_ret_val__is "$?"
   if "$checker_list_"_is_empty; then
     "$self"_ret_equal_is 0
@@ -193,68 +177,29 @@ Test_suite_add_quick_test() {
 
 # return false if test passed since we want to filter failed tests
 run_test_helper() {
-  "$1"_run
-  [ "$?" -ne 0 ]
+  if "$1"_run; then
+    return 1
+  else
+    return 0
+  fi # if else needed to prevent set -e early exit
 }
 
 print_report_helper() {
-  printf '\033[1;37mX\033[0m \033[0;31mFailed test report\033[0m - \033[1m%s\033[0m\n' "$1"
+  printf '\033[1;37mX\033[0m \033[0;31mFailed\033[0m - \033[1m%s\033[0m\n' "$1"
   printf '> \033[1mCommand\033[0m - '
-  "$("$1"_cmd_list_)"_print
+  "$("$1"_cmd_)"_print
   sed 's/.*/  &/' "$("$1"_checkers_report_file_)"
 }
 
 Test_suite_run() {
+  printf %"$(tput cols 2> /dev/null || printf %s "${COLUMNS-80}")"s | tr ' ' =
   printf '\033[1;37m>\033[0m \033[1;35mRunning\033[0m - \033[1;34m%s\033[0m\n' "$self"
   "$tests_"_filter failed_tests run_test_helper
   printf '\033[1;37m=\033[0m \033[1;35mReport\033[0m - \033[1;34m%s\033[0m\n' "$self"
   if failed_tests_is_empty; then
     printf '\033[1;32mPASS\033[0m - %s passed\n' "$("$tests_"_length)"
   else
-    printf '\033[1;31mFAIL\033[0m - %s/%s failed\n' "$(failed_tests_length)" "$("$tests_"_length)"
     failed_tests_foreach print_report_helper
+    printf '\033[1;31mFAIL\033[0m - %s/%s failed\n' "$(failed_tests_length)" "$("$tests_"_length)"
   fi
 }
-
-########################################
-# Here starts the use of the classes created above, in a real world use case we
-# would have two different files and source the lib code in the actual test file
-
-check_equals_1() {
-  if [ "$1" -eq 1 ]; then
-    return 0
-  else
-    printf '%s is not equal to 1\n' "$1" >&2
-    return 1
-  fi
-}
-
-Test_suite ts
-
-Test t1 echo toto
-t1_description__is 'Some toto testing'
-t1_out_equal_is 'toto'
-t1_out_not_equal_is 'titi'
-t1_out_regex_is 't.t.'
-t1_out_not_regex_is 't.t.'
-t1_ret_equal_is 0
-
-Test t2 check_equals_1 6
-Test t3 check_equals_1 1
-
-ts_add t1 t2 t3
-ts_add_quick_test check_equals_1 6
-ts_add_quick_test check_equals_1 1
-
-ts_run
-echo '
-'
-
-Test_suite ts2
-
-Test some_test echo abc
-Test some_other_test echo def
-
-ts2_add some_test some_other_test
-
-ts2_run

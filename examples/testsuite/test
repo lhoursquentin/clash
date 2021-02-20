@@ -1,0 +1,40 @@
+#!/bin/sh
+
+. "${CLASH_ROOT-.}"/examples/testsuite/testlib
+
+check_equals_1() {
+  if [ "$1" -eq 1 ]; then
+    return 0
+  else
+    printf '%s is not equal to 1\n' "$1" >&2
+    return 1
+  fi
+}
+
+Test_suite ts
+
+Test t1 echo toto
+t1_description__is 'Some toto testing'
+t1_out_equal_is 'toto'
+t1_out_not_equal_is 'titi'
+t1_out_regex_is 't.t.'
+t1_out_not_regex_is 't.t.'
+t1_ret_equal_is 0
+
+Test t2 check_equals_1 6
+Test t3 check_equals_1 1
+
+ts_add t1 t2 t3
+ts_add_quick_test check_equals_1 6
+ts_add_quick_test check_equals_1 1
+
+ts_run
+
+Test_suite ts2
+
+Test some_test echo abc
+Test some_other_test echo def
+
+ts2_add some_test some_other_test
+
+ts2_run
