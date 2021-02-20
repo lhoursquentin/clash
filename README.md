@@ -61,6 +61,7 @@ different shells.
 | [FreeBSD sh](https://www.freebsd.org/cgi/man.cgi?query=sh)| FreeBSD 12.1 release      | Full                 |
 | [ksh](https://en.wikipedia.org/wiki/KornShell)            | AT&T 93u+ (2012)          | clash 100%, lib 50%  |
 | [mksh](http://www.mirbsd.org/mksh.htm)                    | R57                       | Full                 |
+| [oksh](https://github.com/ibara/oksh)                     | 5.2.14                    | Full                 |
 | [osh](https://www.oilshell.org)                           | 0.6.0                     | Full                 |
 | [yash](https://yash.osdn.jp)                              | 2.48                      | Full                 |
 | [zsh](https://www.zsh.org/)                               | 5.6.2                     | Full                 |

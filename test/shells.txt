@@ -4,6 +4,7 @@ busybox ash
 dash
 ksh
 mksh
+oksh
 osh
 yash
 zsh
