@@ -37,7 +37,7 @@ assert_out mydict_length -- 4
 mydict_pretty_print
 
 assert_true mydict_items items -- 'Failed to fetch items'
-assert_out items_print -- '(France, Paris) (England, London) (USA, Washington) (Canada, Ottawa) 
+assert_out items_print -- '(France, Paris) (England, London) (USA, Washington) (Canada, Ottawa)
 '
 
 assert_true mydict_clear -- 'Failed to clear'

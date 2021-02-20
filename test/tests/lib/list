@@ -26,14 +26,14 @@ assert_out mylist_get 4 -- 'mno'
 assert_out mylist_get -1 -- 'mno'
 assert_out mylist_index 'mno' -- 4
 
-assert_out mylist_print -- 'abc def ghi jkl mno 
+assert_out mylist_print -- 'abc def ghi jkl mno
 '
 assert_out "$(mylist_head_)"_value -- 'abc'
 assert_out "$(mylist_tail_)"_value -- 'mno'
 
 # Cloning
 assert_true mylist_clone cloned_list -- 'Failed to clone list'
-assert_out cloned_list_print -- 'abc def ghi jkl mno 
+assert_out cloned_list_print -- 'abc def ghi jkl mno
 '
 assert_out cloned_list_length -- 5
 del cloned_list
@@ -42,7 +42,7 @@ del cloned_list
 assert_true mylist_append 'pql' -- 'Failed to append element'
 assert_out mylist_length -- 6
 assert_out mylist_get 5 -- 'pql'
-assert_out mylist_print -- 'abc def ghi jkl mno pql 
+assert_out mylist_print -- 'abc def ghi jkl mno pql
 '
 assert_out "$(mylist_head_)"_value -- 'abc'
 assert_out "$(mylist_tail_)"_value -- 'pql'
@@ -50,7 +50,7 @@ assert_out "$(mylist_tail_)"_value -- 'pql'
 # Insert middle elt
 assert_true mylist_insert 2 'middle' -- 'Failed to insert middle element'
 assert_out mylist_length -- 7
-assert_out mylist_print -- 'abc def middle ghi jkl mno pql 
+assert_out mylist_print -- 'abc def middle ghi jkl mno pql
 '
 assert_out "$(mylist_head_)"_value -- 'abc'
 assert_out "$(mylist_tail_)"_value -- 'pql'
@@ -58,7 +58,7 @@ assert_out "$(mylist_tail_)"_value -- 'pql'
 # Insert head elt
 assert_true mylist_insert 0 'begin' -- 'Failed to insert element at the start'
 assert_out mylist_length -- 8
-assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql 
+assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql
 '
 assert_out "$(mylist_head_)"_value -- 'begin'
 assert_out "$(mylist_tail_)"_value -- 'pql'
@@ -66,7 +66,7 @@ assert_out "$(mylist_tail_)"_value -- 'pql'
 # Insert tail elt
 assert_true mylist_insert 8 'end' -- 'Failed to insert element at the end'
 assert_out mylist_length -- 9
-assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql end 
+assert_out mylist_print -- 'begin abc def middle ghi jkl mno pql end
 '
 assert_out "$(mylist_head_)"_value -- 'begin'
 assert_out "$(mylist_tail_)"_value -- 'end'
@@ -77,7 +77,7 @@ assert_true mylist_remove 'middle' -- 'Failed to remove middle element'
 assert_false mylist_remove 'middle' -- 'Element should have been removed'
 assert_out mylist_get 3 -- 'ghi'
 assert_out mylist_length -- 8
-assert_out mylist_print -- 'begin abc def ghi jkl mno pql end 
+assert_out mylist_print -- 'begin abc def ghi jkl mno pql end
 '
 assert_out "$(mylist_head_)"_value -- 'begin'
 assert_out "$(mylist_tail_)"_value -- 'end'
@@ -88,7 +88,7 @@ assert_true mylist_remove 'begin' -- 'Failed to remove head element'
 assert_false mylist_remove 'begin' -- 'Element should have been removed'
 assert_out mylist_get 0 -- 'abc'
 assert_out mylist_length -- 7
-assert_out mylist_print -- 'abc def ghi jkl mno pql end 
+assert_out mylist_print -- 'abc def ghi jkl mno pql end
 '
 assert_out "$(mylist_head_)"_value -- 'abc'
 assert_out "$(mylist_tail_)"_value -- 'end'
@@ -101,7 +101,7 @@ assert_false mylist_remove 'end' -- 'Element should have been removed'
 assert_out mylist_length -- 6
 assert_out mylist_get -1 -- 'pql'
 assert_out mylist_get 5 -- 'pql'
-assert_out mylist_print -- 'abc def ghi jkl mno pql 
+assert_out mylist_print -- 'abc def ghi jkl mno pql
 '
 assert_out "$(mylist_head_)"_value -- 'abc'
 assert_out "$(mylist_tail_)"_value -- 'pql'
@@ -111,7 +111,7 @@ assert_out mylist_get 2 -- 'ghi'
 assert_out mylist_pop 2 -- 'ghi'
 assert_out mylist_length -- 5
 assert_out mylist_get 2 -- 'jkl'
-assert_out mylist_print -- 'abc def jkl mno pql 
+assert_out mylist_print -- 'abc def jkl mno pql
 '
 assert_out "$(mylist_head_)"_value -- 'abc'
 assert_out "$(mylist_tail_)"_value -- 'pql'
@@ -121,7 +121,7 @@ assert_out mylist_get 0 -- 'abc'
 assert_out mylist_pop 0 -- 'abc'
 assert_out mylist_length -- 4
 assert_out mylist_get 0 -- 'def'
-assert_out mylist_print -- 'def jkl mno pql 
+assert_out mylist_print -- 'def jkl mno pql
 '
 assert_out "$(mylist_head_)"_value -- 'def'
 assert_out "$(mylist_tail_)"_value -- 'pql'
@@ -133,7 +133,7 @@ assert_out mylist_pop -1 -- 'pql'
 assert_out mylist_length -- 3
 assert_out mylist_get -1 -- 'mno'
 assert_out mylist_get 2 -- 'mno'
-assert_out mylist_print -- 'def jkl mno 
+assert_out mylist_print -- 'def jkl mno
 '
 assert_out "$(mylist_head_)"_value -- 'def'
 assert_out "$(mylist_tail_)"_value -- 'mno'
@@ -142,11 +142,12 @@ assert_out "$(mylist_tail_)"_value -- 'mno'
 List single_elt_list foo
 assert_out single_elt_list_pop -- 'foo'
 assert_true single_elt_list_is_empty -- 'Failed to pop single elt list'
+del single_elt_list
 
 # Change existing element value
 mylist_set 1 foo
 assert_out mylist_length -- 3
-assert_out mylist_print -- 'def foo mno 
+assert_out mylist_print -- 'def foo mno
 '
 
 # Concat
@@ -157,7 +158,7 @@ assert_true first_list_concat second_list third_list -- 'Failed to concat'
 del second_list
 del third_list
 assert_out first_list_length -- 9
-assert_out first_list_print -- 'a b c d e f g h i 
+assert_out first_list_print -- 'a b c d e f g h i
 '
 
 del first_list
@@ -165,11 +166,11 @@ del first_list
 # Check print uses the first char of the IFS to separate elements
 OLD_IFS="$IFS"
 IFS=',/:'
-assert_out mylist_print -- 'def,foo,mno,
+assert_out mylist_print -- 'def,foo,mno
 '
 # Same behavior when IFS has a single char
 IFS=':'
-assert_out mylist_print -- 'def:foo:mno:
+assert_out mylist_print -- 'def:foo:mno
 '
 IFS=
 assert_out mylist_print -- 'deffoomno
@@ -177,7 +178,7 @@ assert_out mylist_print -- 'deffoomno
 # When IFS is unset the default should be space
 unset IFS
 if [ -z "${IFS+x}" ]; then # ksh93 refuses to really unset it
-  assert_out mylist_print -- 'def foo mno 
+  assert_out mylist_print -- 'def foo mno
 '
 fi
 IFS="$OLD_IFS"
@@ -185,7 +186,7 @@ IFS="$OLD_IFS"
 # Append multiple values
 assert_true mylist_append 'funk' 'folk' -- 'Failed to append multiple elts'
 assert_out mylist_length -- 5
-assert_out mylist_print -- 'def foo mno funk folk 
+assert_out mylist_print -- 'def foo mno funk folk
 '
 assert_out "$(mylist_head_)"_value -- 'def'
 assert_out "$(mylist_tail_)"_value -- 'folk'
@@ -209,7 +210,7 @@ assert_false mylist_find false -- 'Find failed to return a non-zero value'
 
 # Create a new list with all values matching the condition
 assert_true mylist_filter filtered_list regex_match 'f.*' -- 'Failed to filter'
-assert_out filtered_list_print -- 'foo funk folk 
+assert_out filtered_list_print -- 'foo funk folk
 '
 assert_out filtered_list_length -- 3
 
@@ -224,7 +225,7 @@ first_letter() {
 # Try building a list with the first letter of each node value
 assert_true mylist_map mapped_list first_letter -- 'Failed to map'
 assert_out mapped_list_length -- "$(mylist_length)"
-assert_out mapped_list_print -- 'd f m f f 
+assert_out mapped_list_print -- 'd f m f f
 '
 
 # Print values with reduce
@@ -277,18 +278,17 @@ IFS='
 assert_out mycars_print -- 'foo: 100 km/h
 bar: 200 km/h
 baz: 150 km/h
-
 '
 IFS="$OLD_IFS"
 
 # remove_if
 List foo a b c d a b c
 assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
-assert_out foo_print -- 'b c d a b c 
+assert_out foo_print -- 'b c d a b c
 '
 assert_out foo_length -- 6
 assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
-assert_out foo_print -- 'b d a b c 
+assert_out foo_print -- 'b d a b c
 '
 assert_out foo_length -- 5
 

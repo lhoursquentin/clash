@@ -200,27 +200,32 @@ Vector_pretty_print() {
 }
 
 Vector_print() {
-  (
-    node_printer() {
-      # let's assume there's no binary called $1_print that could cause a false
-      # positive, otherwise we could verify the output of command -v which
-      # should be exactly "$1"_print (or just unset PATH)
-      if command -v "$1"_print > /dev/null; then
-        "$1"_print
-      else
-        printf '%s' "$1"
-      fi
-      local delim=
-      if [ -z "${IFS+x}" ]; then
-        delim=' ' # space delimiter if IFS is unset
-      elif [ -n "$IFS" ]; then
-        local tmp="${IFS#?}"
-        delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
-      fi
-      printf %s "$delim"
-    }
-    "$self"_foreach node_printer
-  )
+  local index=0
+  local value=
+  local delim=
+  while true; do
+    value="$("$self"_Vector_node_"$index"_value; printf x)"
+    value="${value%x}"
+    # let's assume there's no binary called $1_print that could cause a false
+    # positive, otherwise we could verify the output of command -v which
+    # should be exactly "$1"_print (or just unset PATH)
+    if command -v "$value"_print > /dev/null; then
+      "$value"_print
+    else
+      printf %s "$value"
+    fi
+    if [ "$index" -eq "$((length - 1))" ]; then
+      break
+    fi
+    if [ -z "${IFS+x}" ]; then
+      delim=' ' # space delimiter if IFS is unset
+    elif [ -n "$IFS" ]; then
+      local tmp="${IFS#?}"
+      delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
+    fi
+    printf %s "$delim"
+    index="$((index + 1))"
+  done
   echo
 }
 

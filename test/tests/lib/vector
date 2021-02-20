@@ -26,12 +26,12 @@ assert_out myvector_get 4 -- 'mno'
 assert_out myvector_get -1 -- 'mno'
 assert_out myvector_index 'mno' -- 4
 
-assert_out myvector_print -- 'abc def ghi jkl mno 
+assert_out myvector_print -- 'abc def ghi jkl mno
 '
 
 # Cloning
 assert_true myvector_clone cloned_vector -- 'Failed to clone vector'
-assert_out cloned_vector_print -- 'abc def ghi jkl mno 
+assert_out cloned_vector_print -- 'abc def ghi jkl mno
 '
 assert_out cloned_vector_length -- 5
 del cloned_vector
@@ -40,23 +40,23 @@ del cloned_vector
 assert_true myvector_append 'pql' -- 'Failed to append element'
 assert_out myvector_length -- 6
 assert_out myvector_get 5 -- 'pql'
-assert_out myvector_print -- 'abc def ghi jkl mno pql 
+assert_out myvector_print -- 'abc def ghi jkl mno pql
 '
 
 # Insert middle elt
 assert_true myvector_insert 2 'middle' -- 'Failed to insert middle element'
 assert_out myvector_length -- 7
-assert_out myvector_print -- 'abc def middle ghi jkl mno pql 
+assert_out myvector_print -- 'abc def middle ghi jkl mno pql
 '
 
 assert_true myvector_insert 0 'begin' -- 'Failed to insert element at the start'
 assert_out myvector_length -- 8
-assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql 
+assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql
 '
 
 assert_true myvector_insert 8 'end' -- 'Failed to insert element at the end'
 assert_out myvector_length -- 9
-assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql end 
+assert_out myvector_print -- 'begin abc def middle ghi jkl mno pql end
 '
 
 # Remove middle elt
@@ -65,7 +65,7 @@ assert_true myvector_remove 'middle' -- 'Failed to remove middle element'
 assert_false myvector_remove 'middle' -- 'Element should have been removed'
 assert_out myvector_get 3 -- 'ghi'
 assert_out myvector_length -- 8
-assert_out myvector_print -- 'begin abc def ghi jkl mno pql end 
+assert_out myvector_print -- 'begin abc def ghi jkl mno pql end
 '
 
 assert_out myvector_get 0 -- 'begin'
@@ -73,7 +73,7 @@ assert_true myvector_remove 'begin' -- 'Failed to remove head element'
 assert_false myvector_remove 'begin' -- 'Element should have been removed'
 assert_out myvector_get 0 -- 'abc'
 assert_out myvector_length -- 7
-assert_out myvector_print -- 'abc def ghi jkl mno pql end 
+assert_out myvector_print -- 'abc def ghi jkl mno pql end
 '
 
 assert_out myvector_get -1 -- 'end'
@@ -83,7 +83,7 @@ assert_false myvector_remove 'end' -- 'Element should have been removed'
 assert_out myvector_length -- 6
 assert_out myvector_get -1 -- 'pql'
 assert_out myvector_get 5 -- 'pql'
-assert_out myvector_print -- 'abc def ghi jkl mno pql 
+assert_out myvector_print -- 'abc def ghi jkl mno pql
 '
 
 # Pop middle elt
@@ -91,14 +91,14 @@ assert_out myvector_get 2 -- 'ghi'
 assert_out myvector_pop 2 -- 'ghi'
 assert_out myvector_length -- 5
 assert_out myvector_get 2 -- 'jkl'
-assert_out myvector_print -- 'abc def jkl mno pql 
+assert_out myvector_print -- 'abc def jkl mno pql
 '
 
 assert_out myvector_get 0 -- 'abc'
 assert_out myvector_pop 0 -- 'abc'
 assert_out myvector_length -- 4
 assert_out myvector_get 0 -- 'def'
-assert_out myvector_print -- 'def jkl mno pql 
+assert_out myvector_print -- 'def jkl mno pql
 '
 
 assert_out myvector_get -1 -- 'pql'
@@ -107,13 +107,13 @@ assert_out myvector_pop -1 -- 'pql'
 assert_out myvector_length -- 3
 assert_out myvector_get -1 -- 'mno'
 assert_out myvector_get 2 -- 'mno'
-assert_out myvector_print -- 'def jkl mno 
+assert_out myvector_print -- 'def jkl mno
 '
 
 # Change existing element value
 myvector_set 1 foo
 assert_out myvector_length -- 3
-assert_out myvector_print -- 'def foo mno 
+assert_out myvector_print -- 'def foo mno
 '
 
 # Concat
@@ -124,7 +124,7 @@ assert_true first_vector_concat second_vector third_vector -- 'Failed to concat'
 del second_vector
 del third_vector
 assert_out first_vector_length -- 9
-assert_out first_vector_print -- 'a b c d e f g h i 
+assert_out first_vector_print -- 'a b c d e f g h i
 '
 
 del first_vector
@@ -132,11 +132,11 @@ del first_vector
 # Check print uses the first char of the IFS to separate elements
 OLD_IFS="$IFS"
 IFS=',/:'
-assert_out myvector_print -- 'def,foo,mno,
+assert_out myvector_print -- 'def,foo,mno
 '
 # Same behavior when IFS has a single char
 IFS=':'
-assert_out myvector_print -- 'def:foo:mno:
+assert_out myvector_print -- 'def:foo:mno
 '
 IFS=
 assert_out myvector_print -- 'deffoomno
@@ -144,7 +144,7 @@ assert_out myvector_print -- 'deffoomno
 # When IFS is unset the default should be space
 unset IFS
 if [ -z "${IFS+x}" ]; then # ksh93 refuses to really unset it
-  assert_out myvector_print -- 'def foo mno 
+  assert_out myvector_print -- 'def foo mno
 '
 fi
 IFS="$OLD_IFS"
@@ -152,7 +152,7 @@ IFS="$OLD_IFS"
 # Append multiple values
 assert_true myvector_append 'funk' 'folk' -- 'Failed to append multiple elts'
 assert_out myvector_length -- 5
-assert_out myvector_print -- 'def foo mno funk folk 
+assert_out myvector_print -- 'def foo mno funk folk
 '
 
 # Print every value with foreach
@@ -174,7 +174,7 @@ assert_false myvector_find false -- 'Find failed to return a non-zero value'
 
 # Create a new vector with all values matching the condition
 assert_true myvector_filter filtered_vector regex_match 'f.*' -- 'Failed to filter'
-assert_out filtered_vector_print -- 'foo funk folk 
+assert_out filtered_vector_print -- 'foo funk folk
 '
 assert_out filtered_vector_length -- 3
 
@@ -189,7 +189,7 @@ first_letter() {
 # Try building a vector with the first letter of each node value
 assert_true myvector_map mapped_vector first_letter -- 'Failed to map'
 assert_out mapped_vector_length -- "$(myvector_length)"
-assert_out mapped_vector_print -- 'd f m f f 
+assert_out mapped_vector_print -- 'd f m f f
 '
 
 # Print values with reduce
@@ -231,18 +231,17 @@ IFS='
 assert_out mycars_print -- 'foo: 100 km/h
 bar: 200 km/h
 baz: 150 km/h
-
 '
 IFS="$OLD_IFS"
 
 # remove_if
 Vector foo a b c d a b c
 assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
-assert_out foo_print -- 'b c d a b c 
+assert_out foo_print -- 'b c d a b c
 '
 assert_out foo_length -- 6
 assert_true foo_remove_if regex_match '[ac]' -- 'Failed remove_if'
-assert_out foo_print -- 'b d a b c 
+assert_out foo_print -- 'b d a b c
 '
 assert_out foo_length -- 5
 

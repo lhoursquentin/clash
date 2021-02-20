@@ -270,27 +270,34 @@ List_print() {
   if "$self"_is_empty; then
     return
   fi
-  (
-    node_printer() {
-      # let's assume there's no binary called $1_print that could cause a false
-      # positive, otherwise we could verify the output of command -v which
-      # should be exactly "$1"_print (or just unset PATH)
-      if command -v "$1"_print > /dev/null; then
-        "$1"_print
-      else
-        printf '%s' "$1"
-      fi
-      local delim=
-      if [ -z "${IFS+x}" ]; then
-        delim=' ' # space delimiter if IFS is unset
-      elif [ -n "$IFS" ]; then
-        local tmp="${IFS#?}"
-        delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
-      fi
-      printf %s "$delim"
-    }
-    "$self"_foreach node_printer
-  )
+  local index=0
+  local node="$head_"
+  local value=
+  local delim=
+  while true; do
+    value="$("$node"_value; printf x)"
+    value="${value%x}"
+    # let's assume there's no binary called $1_print that could cause a false
+    # positive, otherwise we could verify the output of command -v which
+    # should be exactly "$1"_print (or just unset PATH)
+    if command -v "$value"_print > /dev/null; then
+      "$value"_print
+    else
+      printf %s "$value"
+    fi
+    if [ "$index" -eq "$((length - 1))" ]; then
+      break
+    fi
+    if [ -z "${IFS+x}" ]; then
+      delim=' ' # space delimiter if IFS is unset
+    elif [ -n "$IFS" ]; then
+      local tmp="${IFS#?}"
+      delim="${IFS%$tmp}" # IFS first char is the print delim, like "$*"
+    fi
+    printf %s "$delim"
+    node="$("$node"_next)"
+    index="$((index + 1))"
+  done
   echo
 }
 
@@ -402,7 +409,10 @@ List_sort() {
   while [ "$left_index" -lt "$left_length" ] &&
     [ "$right_index" -lt "$right_length" ]
   do
-    # let's start with numbers only, python style __lt__ stuff will come later
+    # let's start with numbers only, python style __lt__ stuff might come later
+    # but lexicographic test operators are not specified by POSIX, so this
+    # might be a bit tricky to compare strings without an external binary (dash
+    # supports > and <, but zsh for instance only allows it via [[, not [)
     if [ "$("$left_node"_value)" -lt "$("$right_node"_value)" ]; then
       new_node="$left_node"
       left_node="$("$left_node"_next)"
