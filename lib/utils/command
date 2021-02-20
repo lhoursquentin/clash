@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# shebang for coloration, this should only be sourced
+
+. "${CLASH_ROOT-.}"/clash || exit
+. "${CLASH_ROOT-.}"/lib/vector || exit
+
+class Command \
+  args        \
+  _print      \
+  _run        \
+  __init__    \
+
+Command__init__() {
+  local vector_id="$(Vector_anonymous_id)"
+  Vector "$vector_id" "$@"
+  "$self"_args_is "$vector_id"
+}
+
+Command_run() {
+  local nb_args="$("$args"_length)"
+  local index=0
+  while [ "$index" -lt "$nb_args" ]; do
+    local value="$("$args"_get "$index"; printf x)"
+    value="${value%x}"
+    set -- "$@" "$value"
+    index="$((index + 1))"
+  done
+  "$@"
+}
+
+Command_print() {
+  "$args"_print
+}
