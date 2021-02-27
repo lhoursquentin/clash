@@ -18,12 +18,19 @@ Command__init__() {
 }
 
 Command_run() {
+  local nb_extra_args="$#"
   local nb_args="$("$args"_length)"
   local index=0
   while [ "$index" -lt "$nb_args" ]; do
     local value="$("$args"_get "$index"; printf x)"
     value="${value%x}"
     set -- "$@" "$value"
+    index="$((index + 1))"
+  done
+  local index=0
+  while [ "$index" -lt "$nb_extra_args" ]; do
+    set -- "$@" "$1"
+    shift
     index="$((index + 1))"
   done
   "$@"
