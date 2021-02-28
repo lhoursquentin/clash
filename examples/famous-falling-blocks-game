@@ -1,0 +1,325 @@
+#!/bin/sh
+
+. "${CLASH_ROOT-.}"/clash || exit
+. "${CLASH_ROOT-.}"/lib/vector || exit
+. "${CLASH_ROOT-.}"/lib/utils/command || exit
+
+class Grid \
+  width    \
+  height   \
+  rows     \
+  _get     \
+  _set     \
+  _foreach \
+  _print   \
+  __init__ \
+
+Grid__init__() {
+  local rows_id="$(Vector_anonymous_id)"
+  Vector "$rows_id"
+  "$self"_rows_is "$rows_id"
+  "$self"_height_is 0
+  "$self"_width_is 0
+}
+
+Grid_get() {
+  local x="$1"
+  local y="$2"
+  "$("$rows"_get "$y")"_get "$x"
+}
+
+Grid_foreach() {
+  Command handler "$@"
+  handle_cell() {
+    handler_run "$grid_x" "$grid_y" "$1"
+    grid_x="$((grid_x + 1))"
+  }
+  handle_row() {
+    local grid_x=0
+    "$1"_foreach handle_cell
+    grid_y="$((grid_y + 1))"
+  }
+  local grid_y=0
+  "$rows"_foreach handle_row
+  del handler
+}
+
+Grid_print() {
+  local x_offset="$1"
+  local IFS=
+  print_cell() {
+    if [ "$1" = ' ' ]; then
+      tput cuf 1
+    else
+      printf %s "$1"
+    fi
+  }
+  print_row() {
+    if [ -n "$x" ] && [ "$x" -gt 0 ]; then
+      tput cuf "$x_offset"
+    fi
+    "$1"_foreach print_cell
+    echo
+  }
+  "$rows"_foreach print_row
+}
+
+Grid_set() {
+  # TODO could be optimized at the expense of readability
+  local x="$1"
+  local y="$2"
+  local value="$3"
+  local rows_length="$("$rows"_length)"
+  while [ "$rows_length" -le "$y" ]; do
+    local row_id="$(Vector_anonymous_id)"
+    Vector "$row_id"
+    "$rows"_append "$row_id"
+    rows_length="$((rows_length + 1))"
+  done
+  if [ "$rows_length" -gt "$height" ]; then
+    "$self"_height_is "$rows_length"
+  fi
+  local row="$("$rows"_get "$y")"
+  local row_length="$("$row"_length)"
+  while [ "$row_length" -le "$x" ]; do
+    "$row"_append ' '
+    row_length="$((row_length + 1))"
+  done
+  if [ "$row_length" -gt "$width" ]; then
+    "$self"_width_is "$row_length"
+  fi
+
+  "$row"_set "$x" "$value"
+}
+
+class Piece       \
+  x               \
+  y               \
+  shape           \
+  color           \
+  _clear          \
+  _copy_to_field  \
+  _reached_bottom \
+  _print          \
+  _rotate         \
+  _update         \
+  __init__        \
+
+Piece__init__() {
+  "$self"_color_is "$2"
+  "$self"_x_is 5
+  "$self"_y_is 0
+  local shape_id="$(Grid_anonymous_id)"
+  Grid "$shape_id"
+  "$self"_shape_is "$shape_id"
+  local processed=
+  local column_nb=0
+  local row_nb=0
+  rest="$1"
+  while [ -n "$rest" ]; do
+    local prev_rest="$rest"
+    local rest="${rest#?}"
+    local char="${prev_rest%$rest}"
+    if [ "$char" = '
+' ]
+    then
+      row_nb="$((row_nb + 1))"
+      column_nb=0
+    else
+      "$shape"_set "$column_nb" "$row_nb" "$char"
+      column_nb="$((column_nb + 1))"
+    fi
+  done
+}
+
+Piece_print() {
+  printf '%b' "$color"
+  "$shape"_print "$x"
+  printf '\033[0m'
+}
+
+Piece_rotate() {
+  local shape_height="$("$shape"_height)"
+
+  local new_shape_id="$(Grid_anonymous_id)"
+  Grid "$new_shape_id"
+
+
+  copy_cell() {
+    local x="$1"
+    local y="$2"
+    local value="$3"
+    "$new_shape_id"_set "$((shape_height - y - 1))" "$x" "$value"
+  }
+  "$shape"_foreach copy_cell
+  del "$shape"
+  "$self"_shape_is "$new_shape_id"
+}
+
+get_user_input() {
+  # Interestingly using directly <&0 on dd only works with bash.
+  # I'll need to strace to see what is going on here.
+  exec 3<&0
+  stty -icanon
+  input="$(
+    dd bs=1 count=1 2> /dev/null <&3 &
+    sleep 0.1
+    kill "$!" 2> /dev/null
+  )"
+  exec 3<&-
+  stty icanon
+}
+
+Piece_update() {
+  local height="$("$shape"_height)"
+  local input
+  get_user_input
+  "$self"_clear
+  tput cuu "$height"
+  case "$input" in
+    a) "$self"_x_is "$((x - 1))" ;; # TODO: right/left collision checks
+    d) "$self"_x_is "$((x + 1))" ;;
+    q) exit 0 ;;
+    r)
+      "$self"_rotate
+      height="$("$shape"_height)"
+      ;;
+    *)
+      "$self"_y_is "$((y + 1))"
+      tput cud 1
+      ;;
+  esac
+  "$self"_print
+  tput cuu "$height"
+}
+
+Piece_clear() {
+  print_cell() {
+    if [ "$1" = ' ' ]; then
+      tput cuf 1
+    else
+      printf %s ' '
+    fi
+  }
+  handle_row() {
+    if [ "$x" -gt 0 ]; then
+      tput cuf "$x"
+    fi
+    "$1"_foreach print_cell
+    echo
+  }
+  "$("$shape"_rows)"_foreach handle_row
+}
+
+Piece_reached_bottom() {
+  check_collision() {
+    if [ "$3" = x ] &&
+      [ "$(field_get "$(($1 - 1 + x))" "$(($2 + y + 1))")" != ' '  ] # -1 is specific to field
+    then
+      collides=true
+    fi
+  }
+  local collides=false
+  "$shape"_foreach check_collision
+  "$collides"
+}
+
+# FIXME might be cleaner as part of the grid class, but this won't handle
+# skipping the first column
+Piece_copy_to_field() {
+  do_copy() {
+    field_set "$((x - 1 + $1))" "$((y + $2))" "$3" # -1 is specific to field
+  }
+  "$shape"_foreach do_copy
+}
+
+play() {
+  stty -echo
+  tput civis
+  Grid field
+  local field_width=10
+  local field_height=10
+  local x=0
+  local y=0
+  while [ "$y" -lt "$field_height" ]; do
+    for x in 0 "$((field_width - 1))"; do
+      field_set "$x" "$y" '|'
+    done
+    y="$((y + 1))"
+  done
+  local x=1
+  while [ "$x" -lt "$((field_width - 1))" ]; do
+    field_set "$x" "$field_height" =
+    x="$((x + 1))"
+  done
+
+  # Printing and moving the cursor back up before saving the cursor position
+  # will prevent any issues if run from the bottom of the terminal window.
+  echo 'Controls: a/d -> move left/right, r -> rotate, q -> quit'
+  field_print
+  tput cuu "$((field_height + 1))"
+  tput sc
+
+  Vector shapes \
+'x
+xxx' \
+'  x
+xxx' \
+'xxxx' \
+'xx
+xx' \
+'xx
+ xx' \
+' xx
+xx' \
+' x 
+xxx'
+
+  nb_shapes="$(shapes_length)"
+  nb_placed=0
+  while ! "$("$(field_rows)"_get 0)"_find test x =; do
+    tput rc
+    piece_type="$((nb_placed % nb_shapes))"
+    Piece piece "$(shapes_get "$piece_type")" '\033[1;3'"$((piece_type + 1))"m
+    while ! piece_reached_bottom; do
+      piece_update
+    done
+    piece_copy_to_field
+    local piece_row_nb="$(piece_y)"
+    local piece_height="$("$(piece_shape)"_height)"
+    local row_nb_to_check="$piece_row_nb"
+    local field_rows="$(field_rows)"
+    while [ "$row_nb_to_check" -lt "$((piece_row_nb + piece_height))" ]; do
+      local field_row="$("$field_rows"_get "$row_nb_to_check")"
+      if ! "$field_row"_find test ' ' =; then
+        del "$field_row"
+        "$field_rows"_pop "$row_nb_to_check" > /dev/null
+        local new_empty_row_id="$(Vector_anonymous_id)"
+        "$("$field_rows"_get 0)"_clone "$new_empty_row_id"
+        "$field_rows"_insert 0 "$new_empty_row_id"
+        # pack delete and re-insert drawing to prevent flickering
+        tput rc
+        tput il 1
+        tput rc
+        tput cuf 1
+        local IFS=
+        "$new_empty_row_id"_print
+        tput rc
+        tput cud "$((row_nb_to_check + 1))"
+        tput dl 1
+      fi
+      row_nb_to_check="$((row_nb_to_check + 1))"
+    done
+    del piece
+    nb_placed="$((nb_placed + 1))"
+  done
+}
+
+restore_term_settings() {
+  stty echo
+  # doesn't seem to work consistently with Ctrl-c on dash, probably a small bug
+  tput cnorm
+}
+
+trap restore_term_settings EXIT
+play
