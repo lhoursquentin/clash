@@ -1,5 +1,5 @@
 # Clash
-Portable object-oriented shell programming
+Portable object-oriented shell scripting
 
 # Index
 
@@ -15,7 +15,7 @@ Portable object-oriented shell programming
   * [What's the performance of clash? Show me the numbers!](#Whats-the-performance-of-clash-Show-me-the-numbers)
   * [Why not generate variables instead of functions?](#Why-not-generate-variables-instead-of-functions)
   * [I don't see `sh` in the compatibility table, does this support the Bourne shell?](#I-dont-see-sh-in-the-compatibility-table-does-this-support-the-Bourne-shell)
-* [Notes](#Notes)
+* [Additional notes](#Additional-notes)
 
 # What
 Define classes and instantiate objects in shell with the usual shell functions
@@ -144,7 +144,7 @@ Starting family_truck: Vroooooooom
 ### Lib
 
 Simple implementations of **List** and **Vector** have been done so far
-(**Dict** in progress), they can be found in the `lib` directory.
+(**Dict** is mostly a proof of concept), they can be found in the `lib` directory.
 
 Following-up with our example:
 
@@ -199,7 +199,7 @@ Note: this code can be found in the `examples` directory.
 Gathering and organizing data can be painful and dirty in shell, especially when avoiding non-portable features like arrays/maps.
 Object-oriented programming is one solution to those issues, but does not exist natively in shell.
 
-The goal of this project to provide a simple solution to the missing object paradigm and to be as portable as possible (working with **dash**/**bash**/**ksh**/**zsh**/**busybox ash**), the only non POSIX feature used being `local` (more info in the **notes** section).
+The goal of this project to provide a simple solution to the missing object paradigm and to be as portable as possible (working with **dash**/**bash**/**ksh**/**zsh**/**busybox ash**), the only "non POSIX" feature used being `local` (more info in the **notes** section).
 
 Most importantly the syntax to create and use classes and objects is the exact same as usual shell, and that is because  what clash does is only generate functions, almost no parsing is done, and the grammar isn't altered using aliases.
 
@@ -586,6 +586,12 @@ shell environment).
 Also one thing to note is that using variables would mean bypassing `getattr`
 and `setattr` hooks when using direct access, which would defeat their purpose.
 
+A zero command substitution approach is possible but it would require
+introducing even more abstractions to make it work, here's a proof of concept
+of the idea:
+
+https://github.com/lhoursquentin/clash-encore/blob/master/POC.sh
+
 ## I don't see `sh` in the compatibility table, does this support the Bourne shell?
 
 Nowadays (2020), the Bourne shell and `/bin/sh` are usually two different
@@ -608,7 +614,17 @@ not POSIX compliant, it didn't even support functions.
 **clash** should be able to work with any POSIX compliant shell supporting
 `local` assignments, and if it doesn't feel free to open an issue.
 
-# Notes
+# Additional notes
 
-- Using `local` (`typeset` for **ksh**) was a hard choice, considering it was the only thing preventing the framework to be strict POSIX compliant, but `local` can be really handy to avoid flooding all the frames with definitions and most importantly `local` prevents lower frames from overwriting upper frames variables values when using recursion.
-- This project was inspired by the amazing **bash-oo-framework** (https://github.com/niieani/bash-oo-framework), which is a huge project aiming to provide modern features to bash. While object-oriented programming works perfectly well in **bash-oo-framework**, it diverges from the usual shell syntax to provide type safety and other cool features, it almost feels like a different language, which can take some time to learn. This was the motivation to write something closer to the shell syntax and more portable.
+- The `local` builtin (`typeset` for **ksh93**) is not specified by POSIX, but
+  all modern POSIX shells support it (see compatibility table)
+- This project was initially inspired by the amazing **bash-oo-framework**
+  (https://github.com/niieani/bash-oo-framework), a huge project aiming to
+  provide modern features to bash.
+- This whole project is mostly a proof of concept that went too far. Building
+  this was both extremely exciting (being able to see that even strict POSIX
+  shells could do anything with a few layers of abstraction) and very
+  disappointing (incredibly bad performance, making this only usable on a very
+  limited set of use cases and overall a waste of computing resources). I'm not
+  actively working on this project anymore but issues, questions & discussions
+  are of course welcomed.
